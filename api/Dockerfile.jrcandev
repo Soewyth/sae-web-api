@@ -1,0 +1,42 @@
+# I. BUILD
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# 1. Dépendances
+COPY package*.json ./
+RUN npm install
+
+# 2. Schéma Prisma (obligatoire avant generate)
+COPY prisma ./prisma
+
+# 3. Génération du client Prisma
+RUN npx prisma generate
+
+# 4. Code applicatif
+COPY tsconfig.json ./
+COPY src ./src
+
+# 5. Compilation des sources pour une version en production
+RUN npm run build
+
+# II. RUNTIME
+FROM node:20-alpine AS runtime
+
+WORKDIR /app
+
+# 1. Dépendances
+COPY package*.json ./
+RUN npm install --omit=dev
+
+# 2. Récupération des éléments prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/prisma ./prisma
+
+# 3. Récupération du Code applicatif compilé
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 3070
+
+CMD ["node", "dist/index.js"]
