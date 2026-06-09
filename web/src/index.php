@@ -7,17 +7,14 @@ $activePage = 'home';
 
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/includes/navbar.php';
-
 ?>
 
 <main class="page-wrapper">
 
-    En construction    
+    En construction
 
 </main>
 
-<?php
-
-require_once __DIR__ . '/includes/footer.php';
+<?php require_once __DIR__ . '/includes/footer.php';
 
 ?>

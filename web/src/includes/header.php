@@ -3,7 +3,6 @@
 $pageTitle = $pageTitle ?? APP_NAME;
 $activePage = $activePage ?? '';
 $bodyClass = $bodyClass ?? '';
-
 ?>
 
 <!DOCTYPE html>
@@ -29,6 +28,3 @@ $bodyClass = $bodyClass ?? '';
     <!-- CSS personnalisé -->
     <link rel="stylesheet" href="<?= url('css/style.css') ?>">
 </head>
-
-<body class="<?= htmlspecialchars($bodyClass) ?>">
-    
