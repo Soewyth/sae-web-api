@@ -1,3 +1,4 @@
+/* General */
 :root {
     --color-primary: #1A274A;
     --color-secondary: #00B4A6;
@@ -29,3 +30,76 @@ a {
     text-decoration: none;
 }
 
+.page-wrapper {
+    min-height: calc(100vh - 64px);
+}
+
+/* HEADER */
+.top-header {
+    background-color: var(--color-primary);
+}
+
+.app-navbar {
+    min-height: 70px;
+    background-color: var(--color-primary);
+}
+
+.navbar-brand {
+    color: var(--color-white);
+    font-size: 1.1rem;
+}
+
+.brand-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-secondary);
+    color: var(--color-white);
+    font-size: 0.95rem;
+}
+
+.app-navbar .nav-link {
+    color: rgba(255, 255, 255, 0.72);
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding-inline: 1rem;
+    position: relative;
+}
+
+.app-navbar .nav-link:hover {
+    color: var(--color-white);
+}
+
+.app-navbar .nav-link.active {
+    color: var(--color-white);
+    font-weight: 700;
+}
+
+.app-navbar .nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    bottom: 0.2rem;
+    height: 2px;
+    border-radius: 999px;
+    background-color: var(--color-secondary);
+}
+
+.btn-app-secondary {
+    background-color: var(--color-secondary);
+    color: var(--color-white);
+    border: 1px solid var(--color-secondary);
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 0.45rem 1rem;
+}
+
+.btn-app-secondary:hover {
+    background-color: #009d91;
+    border-color: #009d91;
+    color: var(--color-white);
+}
