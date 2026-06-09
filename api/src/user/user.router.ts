@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { verifyJWT } from '../common/jwt.middleware';
+import { verifyJWT } from '../common/jwt.middleware.js';
 
 
 // Import controller functions
@@ -8,7 +8,7 @@ import {
     getUserById,
     updateUser,
     deleteUser
-} from './user.controller';
+} from './user.controller.js';
 
 // Create router
 export const userRouter = Router();

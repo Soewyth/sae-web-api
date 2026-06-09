@@ -29,7 +29,10 @@ authRouter.post('/register', async (req: Request, res: Response) => {
             user: { id: user.id, email: user.email, username: user.username }
         })
     } catch (error) {
-        res.status(500).json({ error: 'Erreur serveur' })
+        res.status(500).json({
+            message: 'Erreur serveur',
+            error:error
+        })
     }
 })
 

@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import prisma from '../client';
+import {prisma} from "../client.js";
 import bcrypt from 'bcrypt';
 import 'dotenv/config';
 
@@ -19,20 +19,16 @@ export async function getUsers(req: Request, res: Response) {
             result: users
         });
     } catch (error) {
-        res.status(500).json({ error: 'Une erreur est survenue lors de la récupération des utilisateurs.' });
+        res.status(500).json({
+            message: 'Une erreur est survenue lors de la récupération des utilisateurs.',
+            error: error
+        });
     }
 }
 
 // Get user by ID
 export async function getUserById(req: Request, res: Response) {
-    const { id } = req.params;
-    const userId = Number(id);
-
-    if (isNaN(userId)) {
-        res.status(400).json({ error: "L'ID doit être un nombre valide." });
-        return;
-    }
-
+    const userId = req.params.userId;
     try {
         const user = await prisma.user.findUnique({
             where: { id: userId },
@@ -53,24 +49,20 @@ export async function getUserById(req: Request, res: Response) {
             result: user
         });
     } catch (error) {
-        res.status(500).json({ error: 'Une erreur est survenue lors de la récupération de l\'utilisateur.' });
+        res.status(500).json({
+            message: 'Une erreur est survenue lors de la récupération de l\'utilisateur.',
+            error: error
+        });
     }
 }
 
 // Update user by ID
 export async function updateUser(req: Request, res: Response) {
-    const { id } = req.params;
-    const userId = Number(id);
+    const userId = req.params.userId;
     const { email, password, username } = req.body;
-
-    if (isNaN(userId)) {
-        res.status(400).json({ error: "L'ID doit être un nombre valide." });
-        return;
-    }
-
     // one field must be provided
     if (!email && !password && !username) {
-        res.status(400).json({ error: "Au moins un champ 'email', 'password' ou 'username' doit être fourni." });
+        res.status(400).json({ error: "Les champs 'email', 'password' et 'username' doivent être fournis." });
         return;
     }
 
@@ -128,19 +120,16 @@ export async function updateUser(req: Request, res: Response) {
             result: updatedUser
         });
     } catch (error) {
-        res.status(500).json({ error: 'Une erreur est survenue lors de la mise à jour de l\'utilisateur.' });
+        res.status(500).json({
+            message: 'Une erreur est survenue lors de la mise à jour de l\'utilisateur.',
+            error: error
+        });
     }
 }
 
 // Delete user by ID
 export async function deleteUser(req: Request, res: Response) {
-    const { id } = req.params;
-    const userId = Number(id);
-
-    if (isNaN(userId)) {
-        res.status(400).json({ error: "L'ID doit être un nombre valide." });
-        return;
-    }
+    const userId = req.params.userId;
 
     try {
         // Check if user exists
@@ -160,6 +149,9 @@ export async function deleteUser(req: Request, res: Response) {
 
         res.status(200).json({ message: 'Utilisateur supprimé avec succès.' });
     } catch (error) {
-        res.status(500).json({ error: 'Une erreur est survenue lors de la suppression de l\'utilisateur.' });
+        res.status(500).json({
+            message: 'Une erreur est survenue lors de la suppression de l\'utilisateur.',
+            error: error
+        });
     }
 }
