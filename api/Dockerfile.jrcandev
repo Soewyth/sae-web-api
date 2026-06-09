@@ -27,7 +27,7 @@ WORKDIR /app
 
 # 1. Dépendances
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm install --omit=dev --ignore-scripts
 
 # 2. Récupération des éléments prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
