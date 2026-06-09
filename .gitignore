@@ -11,6 +11,7 @@ pnpm-debug.log*
 dist/
 build/
 coverage/
+.husky/_/
 
 *.tsbuildinfo
 
@@ -56,7 +57,7 @@ Thumbs.db
 .phpunit.result.cache
 
 # =========================
-# Uploads (si ton site stocke des fichiers)
+# Uploads (si le site stocke des fichiers)
 # =========================
 
 uploads/*
