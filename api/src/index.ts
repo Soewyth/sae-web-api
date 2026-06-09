@@ -1,14 +1,25 @@
+import { config } from 'dotenv'
 import express from 'express'
-import type { Request, Response } from 'express';
 import { prisma } from './client.js'
+import type { Request, Response, NextFunction } from 'express';
 import { authRouter } from './auth/auth.router.js'
 import { userRouter } from './user/user.router.js'
 import { cityRouter } from './city/city.router.js'
 import { eventRouter } from './event/event.router.js'
 import { reviewRouter } from './review/review.router.js'
 import { logRouter } from './log/log.router.js'
-const app = express()
-app.use(express.json())
+
+config({ path: '.env' })
+
+export const app = express();
+
+app.use(express.json());
+
+const port = process.env.API_PORT || 3070
+
+export const server = app.listen(port, () => {
+  console.log(`API running on port ${port}`);
+})
 
 app.get('/api/health', async (_req: Request, res: Response) => {
   try {
@@ -31,6 +42,12 @@ app.get('/api/health', async (_req: Request, res: Response) => {
   }
 })
 
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] Requête reçue : ${req.method} ${req.url}`);
+  next(); // Passe à la prochaine fonction middleware ou route
+});
+
 app.use('/auth', authRouter);
 app.use('/user', userRouter);
 app.use('/city', cityRouter);
@@ -38,7 +55,6 @@ app.use('/event', eventRouter);
 app.use('/review', reviewRouter);
 app.use('/logs', logRouter);
 
-const port = process.env.API_PORT || 3070
-app.listen(port, () => {
-  console.log(`API running on port ${port}`)
-})
+export function stopServer() {
+  if (server) server.close();
+}
