@@ -2,5 +2,8 @@
   "api/src/**/*.{ts,tsx}": [
     "eslint --fix",
     "prettier --write"
+  ],
+  "web/src/**/*.php": [
+    "php -l"
   ]
 }
