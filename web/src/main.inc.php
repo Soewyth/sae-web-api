@@ -16,7 +16,7 @@ function isUserLoggedIn(): bool
 }
 
 /**
- * Permet de simplifier les liens.
+ * Permet de simplifier les liens   
  */
 function url(string $path): string
 {
