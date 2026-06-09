@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -22,6 +21,7 @@ model User {
 
   // Relations
   logs        Log[]        @relation("Log_user")
+  userReviews UserReview[] @relation("UserReview_user")
 }
 
 model City {
@@ -33,6 +33,7 @@ model City {
   inseeCode  String  @unique @db.VarChar(5)
   postalCode String  @db.VarChar(5)
   imageUrl   String? @db.VarChar(250)
+  region    String  @db.VarChar(100)
 
   // Relations
   events Event[] @relation("Event_city")
@@ -47,7 +48,7 @@ model Event {
   description String?
   isOutdoor   Boolean      @default(false)
   nbGuests    Int?
-  title       String       @db.VarChar(50)
+  title       String       @db.VarChar(100)
   weather     Json?
   imageUrl    String?      @db.VarChar(250)
   createdAt   DateTime     @default(now())
@@ -55,9 +56,9 @@ model Event {
   // Fields FK
   FK_cityId   String
   // Relations
-  city        City         @relation("Event_city", fields: [FK_cityId], references: [id])
-  reviews     UserReview[] @relation("UserReview_event")
-  logs        Log[]        @relation("Log_event")
+  city        City         @relation(name: "Event_city", fields: [FK_cityId], references: [id])
+  reviews     UserReview[] @relation(name: "UserReview_event")
+  logs        Log[]        @relation(name: "Log_event")
 }
 
 model UserReview {
@@ -73,9 +74,9 @@ model UserReview {
   FK_userId String
 
   // Relations
-  event Event @relation("UserReview_event", fields: [FK_EventId], references: [id])
-  user  User  @relation(fields: [FK_userId], references: [id])
-  logs  Log[] @relation("Log_review")
+  event Event @relation(name: "UserReview_event", fields: [FK_EventId], references: [id])
+  user  User  @relation(name: "UserReview_user", fields: [FK_userId], references: [id])
+  logs  Log[] @relation(name: "Log_review")
 }
 
 model Log {
