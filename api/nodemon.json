@@ -1,7 +1,9 @@
 {
-  "watch": ["src"],
+  "exec": "tsx ./src/index.ts",
   "ext": "ts",
-  "execMap": {
-    "ts": "node --no-warnings=ExperimentalWarning --loader ts-node/esm"
-  }
+  "watch": ["src/**/*"],
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "envFile": ".env"
 }

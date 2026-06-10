@@ -16,7 +16,7 @@ coverage/
 *.tsbuildinfo
 
 # Variables d'environnement
-.env
+api/.env
 .env.*
 !.env.example
 
