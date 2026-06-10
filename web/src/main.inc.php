@@ -23,3 +23,27 @@ function url(string $path): string
     return BASE_URL . '/' . ltrim($path, '/');
 }
 
+
+function isAdmin(): bool
+{
+    return isset($_SESSION['user']) && isset($_SESSION['user']['isAdmin']) && ($_SESSION['user']['isAdmin'] === true);
+}
+
+
+function requireLogin(): void
+{
+    if (!isUserLoggedIn()){
+        header('Location: ' . url('pages/login.php'));
+        exit;
+    }
+}
+
+function requireAdmin(): void
+{
+    requireLogin();
+
+    if (!isAdmin()){
+        header('Location: ' . url('pages/403.php'));
+        exit;
+    }
+}
