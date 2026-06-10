@@ -4,7 +4,7 @@ services:
     image: postgres:16
     restart: unless-stopped
     env_file:
-      - api/.env
+      - .env
     volumes:
       - postgres_sae_data:/var/lib/postgresql/data
     networks:
@@ -17,7 +17,7 @@ services:
       dockerfile: Dockerfile.jrcandev
     restart: unless-stopped
     env_file:
-      - api/.env
+      - .env
     depends_on:
       - db
     networks:

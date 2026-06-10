@@ -1,4 +1,6 @@
-import { config } from 'dotenv'
+// Charge les variables d'environnement AVANT tout import qui lit process.env
+// (client.js crée l'adaptateur Prisma avec DATABASE_URL au moment de l'import)
+import 'dotenv/config'
 import express from 'express'
 import { prisma } from './client.js'
 import type { Request, Response, NextFunction } from 'express';
@@ -8,8 +10,6 @@ import { cityRouter } from './city/city.router.js'
 import { eventRouter } from './event/event.router.js'
 import { reviewRouter } from './review/review.router.js'
 import { logRouter } from './log/log.router.js'
-
-config({ path: '.env' })
 
 export const app = express();
 

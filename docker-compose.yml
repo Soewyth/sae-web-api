@@ -4,7 +4,7 @@ services:
     image: postgres:16
     restart: unless-stopped
     env_file:
-      - api/.env
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql
     ports:
@@ -17,7 +17,7 @@ services:
     build: ./api
     restart: unless-stopped
     env_file:
-      - api/.env
+      - .env
     volumes:
       - ./api:/app
       - /app/node_modules
