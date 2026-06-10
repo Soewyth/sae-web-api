@@ -4,7 +4,7 @@ services:
     image: postgres:16
     restart: unless-stopped
     env_file:
-      - api/.env
+      - .env
     volumes:
       - postgres_sae_data:/var/lib/postgresql/data
     networks:
@@ -12,12 +12,12 @@ services:
 
   api:
     container_name: ${NAME}_api
-    build: 
+    build:
       context: ./api
       dockerfile: Dockerfile.jrcandev
     restart: unless-stopped
     env_file:
-      - api/.env
+      - .env
     depends_on:
       - db
     networks:
@@ -35,7 +35,7 @@ services:
 
   web:
     container_name: ${NAME}_web
-    build: 
+    build:
       context: ./web
       dockerfile: Dockerfile
     restart: unless-stopped
