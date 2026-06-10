@@ -74,7 +74,7 @@ export const getEventByCity = async (req: Request, res: Response)=> {
             //On récupère les événements
             const events = await prisma.event.findMany({
                 where: {
-                    fk_city: cityId
+                    FK_cityId: cityId
                 }
             })
             if (!events) {
