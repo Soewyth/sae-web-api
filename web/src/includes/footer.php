@@ -65,6 +65,6 @@
             text-decoration: underline;
         }
     }
-
     <?php include 'css/style.css'; ?>
+
 </style>
