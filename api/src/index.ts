@@ -8,6 +8,7 @@ import { cityRouter } from './city/city.router.js'
 import { eventRouter } from './event/event.router.js'
 import { reviewRouter } from './review/review.router.js'
 import { logRouter } from './log/log.router.js'
+import { recommendationRouter } from './recommendation/recommendation.router.js'
 
 export const app = express();
 
@@ -52,6 +53,7 @@ app.use('/city', cityRouter);
 app.use('/event', eventRouter);
 app.use('/review', reviewRouter);
 app.use('/logs', logRouter);
+app.use('/recommendations', recommendationRouter);
 
 export function stopServer() {
   if (server) server.close();
