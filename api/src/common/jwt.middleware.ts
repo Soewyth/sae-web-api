@@ -3,9 +3,10 @@ import jwt from 'jsonwebtoken'
 import 'dotenv/config'
 // Étendre le type Request pour ajouter userId
 declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Express {
         interface Request {
-            userId?: number
+            userId?: string
         }
     }
 }
@@ -21,7 +22,7 @@ export const verifyJWT = (req: Request, res: Response, next: NextFunction,
     try {
         // 2. Vérifier et décoder le token
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
-            userId: number
+            userId: string
             email: string
         }
         // 3. Ajouter userId à la requête pour l'utiliser dans les routes
@@ -29,7 +30,10 @@ export const verifyJWT = (req: Request, res: Response, next: NextFunction,
         // 4. Passer au prochain middleware ou à la route
         next()
     } catch (error) {
-        res.status(401).json({ error: 'Token invalide ou expiré' })
+        res.status(401).json({
+            message: 'Token invalide ou expiré',
+            error: error
+        })
         return
     }
 }

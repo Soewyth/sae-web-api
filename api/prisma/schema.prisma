@@ -33,7 +33,7 @@ model City {
   inseeCode  String  @unique @db.VarChar(5)
   postalCode String  @db.VarChar(5)
   imageUrl   String? @db.VarChar(250)
-  region    String  @db.VarChar(100)
+  region     String  @db.VarChar(100)
 
   // Relations
   events Event[] @relation("Event_city")
@@ -47,7 +47,7 @@ model Event {
   endDate     DateTime
   description String?
   isOutdoor   Boolean      @default(false)
-  nbGuests    Int?
+  nbGuests    Int
   title       String       @db.VarChar(100)
   weather     Json?
   imageUrl    String?      @db.VarChar(250)
