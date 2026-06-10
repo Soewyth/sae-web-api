@@ -44,6 +44,14 @@ function getDateRange(month: number): { start: string; end: string } {
     };
 }
 
+// Score based on number of concurrent events in the city
+// 0-1 event → 100, 2-3 events → 50, 4+ events → 0
+function calcScoreEvents(count: number): number {
+    if (count <= 1) return 100;
+    if (count <= 3) return 50;
+    return 0;
+}
+
 // Add days to a date string: "2025-07-30" + 3 => "2025-08-02"
 function addDays(dateStr: string, days: number): string {
     const date = new Date(dateStr);
@@ -57,12 +65,14 @@ function isDateInRange(date: string, start: string, end: string): boolean {
 }
 /**
  * GET /recommendations/
- * Return top 3 of cities with the best average temperature for the given month
+ * Return top 3 of cities with the best score for the given month and duration.
+ * If isOutdoor=true: score based on average temperature (weather API).
+ * If isOutdoor=false: score based on number of concurrent events in the city.
  */
 export const getTopCities = async (req: Request, res: Response) => {
     const monthParam = req.query.month;
     const durationParam = req.query.duration;
-
+    const isOutdoorParam = req.query.isOutdoor;
 
     if (typeof monthParam !== 'string') {
         res.status(400).json({ error: 'Le paramètre "month" doit être un nombre entre 1 et 12.' });
@@ -74,8 +84,14 @@ export const getTopCities = async (req: Request, res: Response) => {
         return;
     }
 
+    if (typeof isOutdoorParam !== 'string' || (isOutdoorParam !== 'true' && isOutdoorParam !== 'false')) {
+        res.status(400).json({ error: 'Le paramètre "isOutdoor" doit être "true" ou "false".' });
+        return;
+    }
+
     const month = parseInt(monthParam, 10);
     const duration = parseInt(durationParam, 10);
+    const isOutdoor = isOutdoorParam === 'true';
 
     if (isNaN(month) || month < 1 || month > 12) {
         res.status(400).json({ error: 'Le paramètre "month" doit être un nombre entre 1 et 12.' });
@@ -86,84 +102,129 @@ export const getTopCities = async (req: Request, res: Response) => {
         res.status(400).json({ error: 'Le paramètre "duration" doit être un nombre supérieur à 0.' });
         return;
     }
+
     try {
         const cities = await prisma.city.findMany();
-        const { start, end } = getDateRange(month); // format : YYYY-MM-DD 
-        // Need extra days after the end of the month for frontend selection with duration
+        const { start, end } = getDateRange(month); // format "2023-07-01", "2023-07-31"
         const fetchEndDate = addDays(end, duration - 1);
         const results = [];
 
-        // Fetch all of cities weather data and calculate average temperature and score
-        for (const city of cities) {
-            const url =
-                OPEN_METEO_URL +
-                '?latitude=' + city.latitude + // from bdd
-                '&longitude=' + city.longitude + // from bdd
-                '&start_date=' + start + // recuperate from function
-                '&end_date=' + fetchEndDate + // recuperate from function + duration
-                '&daily=temperature_2m_max,temperature_2m_min&timezone=auto'; // fixed param from api weather
+        if (isOutdoor) {
+            // Outdoor: score based on average temperature
+            for (const city of cities) {
+                const url =
+                    OPEN_METEO_URL +
+                    '?latitude=' + city.latitude + // from bdd
+                    '&longitude=' + city.longitude + // from bdd
+                    '&start_date=' + start + // from function
+                    '&end_date=' + fetchEndDate + // from function
+                    '&daily=temperature_2m_max,temperature_2m_min&timezone=auto'; // from the API
 
-            // fetch url with concat
-            const response = await fetch(url);
+                const response = await fetch(url);
 
-            if (!response.ok) {
-                res.status(500).json({ error: `Erreur lors de l'appel à Open-Meteo pour la ville ${city.name}` });
-                return;
-            }
+                if (!response.ok) {
+                    res.status(500).json({ error: `Erreur lors de l'appel à Open-Meteo pour la ville ${city.name}` });
+                    return;
+                }
 
-            // Parse data and build array of max and min temps
-            const data = await response.json() as {
-                daily: {
-                    time: string[];
-                    temperature_2m_max: Array<number | null>;
-                    temperature_2m_min: Array<number | null>;
+                const data = await response.json() as {
+                    daily: {
+                        time: string[];
+                        temperature_2m_max: Array<number | null>;
+                        temperature_2m_min: Array<number | null>;
+                    };
                 };
-            };
+                // calculate daily scores and average for the month (only for days in the selectable range)
+                const dailyScores = [];
+                let total = 0;
+                let validDays = 0;
 
-            const dailyScores = [];
+                for (let i = 0; i < data.daily.time.length; i++) {
+                    const date = data.daily.time[i];
+                    const maxTemp = data.daily.temperature_2m_max[i];
+                    const minTemp = data.daily.temperature_2m_min[i];
 
-            // Calculate average temperature for the selected month only
-            let total = 0;
-            let validDays = 0;
+                    if (!date || maxTemp == null || minTemp == null) continue; // skip null valuess
 
-            for (let i = 0; i < data.daily.time.length; i++) {
-                const date = data.daily.time[i];
-                const maxTemp = data.daily.temperature_2m_max[i];
-                const minTemp = data.daily.temperature_2m_min[i];
+                    const avgTemp = (maxTemp + minTemp) / 2;
+                    // Calculate score for this day and store it with the date and temps for the response
+                    dailyScores.push({
+                        date,
+                        maxTemp,
+                        minTemp,
+                        avgTemp: Math.round(avgTemp * 10) / 10,
+                        score: calcScoreTemp(avgTemp),
+                    });
+                    // only include daays in selectable range
+                    if (isDateInRange(date, start, end)) {
+                        total += avgTemp;
+                        validDays++;
+                    }
+                }
 
-                if (!date || maxTemp == null || minTemp == null) continue; // skip null temps
+                if (validDays === 0) continue;
 
-                const avgTemp = (maxTemp + minTemp) / 2;
-
-                dailyScores.push({
-                    date,
-                    maxTemp,
-                    minTemp,
+                const avgTemp = total / validDays;
+                results.push({
+                    city,
                     avgTemp: Math.round(avgTemp * 10) / 10,
                     score: calcScoreTemp(avgTemp),
+                    days: dailyScores,
                 });
-
-                // Only selected month is used for city ranking
-                if (isDateInRange(date, start, end)) {
-                    total += avgTemp;
-                    validDays++;
-                }
             }
+        } else {
+            // Indoor: score based on number of concurrent events in the city
+            for (const city of cities) {
+                // Fetch events for this city that overlap with the full selectable range
+                const cityEvents = await prisma.event.findMany({
+                    where: {
+                        FK_cityId: city.id,
+                        startDate: { lte: new Date(fetchEndDate) }, // keep events between the start and end of selectable date 
+                        endDate: { gte: new Date(start) },
+                    },
+                });
+                // calculate daily scores and average for the month (only for days in the selectable range)
+                const dailyScores = [];
+                let totalScore = 0;
+                let validDays = 0;
 
-            if (validDays === 0) continue; // skip city if no valid data
-            // Calculate average temp for the month
-            const avgTemp = total / validDays;
+                // For each day in the month, count how many events are happening in the city and calculate score
+                let currentDate = start;
+                while (currentDate <= end) {
+                    const windowStart = new Date(currentDate);
+                    const windowEnd = new Date(addDays(currentDate, duration - 1));
+                    // Count how many events overlap with this day (windowStart to windowEnd)
+                    const count = cityEvents.filter(
+                        (e) => e.startDate <= windowEnd && e.endDate >= windowStart,
+                    ).length;
+                    // score for function of number of events
+                    const score = calcScoreEvents(count);
+                    // push in array
+                    dailyScores.push({
+                        date: currentDate,
+                        windowStart: currentDate,
+                        windowEnd: addDays(currentDate, duration - 1),
+                        eventCount: count,
+                        score,
+                    });
 
-            // push in array the city, average temp, score and days
-            results.push({
-                city,
-                avgTemp: Math.round(avgTemp * 10) / 10,
-                score: calcScoreTemp(avgTemp),
-                days: dailyScores,
-            });
+                    totalScore += score;
+                    validDays++;
+                    // move to the next day
+                    currentDate = addDays(currentDate, 1);
+                }
+
+                if (validDays === 0) continue;
+                // average score for the month
+                const avgScore = Math.round(totalScore / validDays);
+                results.push({
+                    city,
+                    score: avgScore,
+                    days: dailyScores,
+                });
+            }
         }
 
-        // Sort by score descending and keep the top 3
         results.sort((a, b) => b.score - a.score);
         const top3 = results.slice(0, 3);
 
@@ -171,6 +232,7 @@ export const getTopCities = async (req: Request, res: Response) => {
             message: 'Top 3 villes récupérées avec succès.',
             month,
             duration,
+            isOutdoor,
             startDate: start,
             endDate: end,
             fetchEndDate,
