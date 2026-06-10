@@ -55,7 +55,7 @@ $months = [
                     <select class="form-select form-select-lg" name="event_type" required>
                         <option selected disabled value="">Type d'événement</option>
                         <?php foreach ($event_types as $event_type): ?>
-                            <option value="<?php $event_type; ?>"><?= $event_type ?></option>
+                            <option value="<?= $event_type ?>"><?= $event_type ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -66,10 +66,10 @@ $months = [
                 <div class="col-md-3 d-flex flex-column">
                     <span class="text-uppercase fw-bold small mb-2">Lieu</span>
                     <div class="btn-group" role="group" aria-label="Choix du lieu">
-                        <input type="radio" class="btn-check" name="event_place" id="outdoor" checked>
+                        <input type="radio" class="btn-check" name="event_place" id="outdoor" value="outdoor" checked>
                         <label class="btn btn-radio btn-outline-secondary px-3 py-2" for="outdoor">Outdoor</label>
 
-                        <input type="radio" class="btn-check" name="event_place" id="indoor">
+                        <input type="radio" class="btn-check" name="event_place" id="indoor" value="indoor">
                         <label class="btn btn-radio btn-outline-secondary px-3 py-2" for="indoor">Indoor</label>
                     </div>
                 </div>
