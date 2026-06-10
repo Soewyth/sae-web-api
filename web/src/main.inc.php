@@ -3,6 +3,7 @@
 session_start();
 
 require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/class/ApiClient.class.php';
 
 /**
  * Permet de savoir si l'utilisateur est connecté.
@@ -11,8 +12,7 @@ require_once __DIR__ . '/config/config.php';
  */
 function isUserLoggedIn(): bool
 {
-    return true;
-    // return isset($_SESSION['user']);
+    return isset($_SESSION['user']);
 }
 
 /**
