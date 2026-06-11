@@ -58,6 +58,8 @@ const buildWeatherResponse = (maxTemps: number[], minTemps: number[], dates: str
       time: dates,
       temperature_2m_max: maxTemps,
       temperature_2m_min: minTemps,
+      precipitation_sum: dates.map(() => 0),
+      sunshine_duration: dates.map(() => 3600),
     },
   }),
 });
@@ -400,6 +402,8 @@ describe('Recommendation Controller - mode outdoor', () => {
           time: [`${year}-07-15`, `${year}-07-16`],
           temperature_2m_max: [null, 20],
           temperature_2m_min: [null, 10],
+          precipitation_sum: [null, 0],
+          sunshine_duration: [null, 3600],
         },
       }),
     });
