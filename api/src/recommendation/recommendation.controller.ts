@@ -11,8 +11,8 @@ function calcScoreTemp(temp: number): number {
     }
 
     if (temp <= 20) {
-        const t = (temp - 0) / (20 - 0); // Normalize between 0 and 1
-        return Math.round(0 + t * (100 - 0)); // Scale from 0 to 100
+        const t = (temp) / (20); // Normalize between 0 and 1
+        return Math.round(t * 100); // Scale from 0 to 100
     }
 
     if (temp <= 30) {
@@ -27,6 +27,8 @@ function calcScoreTemp(temp: number): number {
 
     return 0;
 }
+
+//TODO : récupérer les données des 5 ans précédents
 
 // Return the date range for a given month ex : 2023-07-31
 function getDateRange(month: number): { start: string; end: string } {

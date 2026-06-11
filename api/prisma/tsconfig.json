@@ -1,0 +1,12 @@
+{
+  // Configuration dédiée aux scripts Prisma (ex: seed.ts), hors du dossier src.
+  // Permet à l'IDE d'appliquer un target moderne (itération de Map, etc.)
+  // et de connaître les types Node (process.env, ...).
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["**/*.ts"]
+}

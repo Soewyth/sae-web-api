@@ -26,6 +26,10 @@ export const getEvents = async (_req: Request, res: Response) => {
 export const getEventById = async (req: Request, res: Response) => {
     // On récupère l'id
     const eventId = req.params.id
+    if (typeof eventId !== 'string') {
+        res.status(400).json({ error: "Identifiant d'événement invalide." })
+        return
+    }
     try {
         //On regarde si l'événement existe
         const event = await prisma.event.findUnique({
@@ -58,6 +62,10 @@ export const getEventById = async (req: Request, res: Response) => {
 export const getReviewsByEvent = async (req: Request, res: Response) => {
     // on récupère l'id de l'événement
     const eventId = req.params.id
+    if (typeof eventId !== 'string') {
+        res.status(400).json({ error: "Identifiant d'événement invalide." })
+        return
+    }
     try {
         //On regarde si l'événement existe
         const event = await prisma.event.findUnique({
@@ -137,6 +145,10 @@ export const postEvent = async (req: Request, res: Response) => {
 
         //On récupère l'utilisateur
         const userId = req.userId
+        if (!userId) {
+            res.status(401).json({ message: "Utilisateur non authentifié." })
+            return
+        }
 
         const eventToCreate = await prisma.event.create({
             data: {
@@ -171,6 +183,10 @@ export const postEvent = async (req: Request, res: Response) => {
  */
 export const putEvent = async (req: Request, res: Response) => {
     const eventId = req.params.id
+    if (typeof eventId !== 'string') {
+        res.status(400).json({ error: "Identifiant d'événement invalide." })
+        return
+    }
     //On récupère les données du body
     const {
         type,
@@ -244,6 +260,10 @@ export const putEvent = async (req: Request, res: Response) => {
  */
 export const deleteEvent = async (req: Request, res: Response) => {
     const eventId = req.params.id
+    if (typeof eventId !== 'string') {
+        res.status(400).json({ error: "Identifiant d'événement invalide." })
+        return
+    }
     try {
         const event = await prisma.event.findUnique({
             where: {
