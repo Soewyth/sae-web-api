@@ -18,6 +18,10 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      # Dans le conteneur, PostgreSQL est joignable via le service "db" et non
+      # localhost (valeur du .env, destinée aux outils lancés depuis l'hôte).
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
     depends_on:
       - db
     networks:
