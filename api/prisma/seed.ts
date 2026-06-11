@@ -135,7 +135,7 @@ async function main() {
 
       const title = (obj.label?.['@fr'] ?? 'Sans titre').substring(0,100)
       const imageUrl = obj.hasMainRepresentation?.[0]?.hasRelatedResource?.[0]?.locator?.[0] ?? null
-
+      
       await prisma.event.create({
         data: {
           title: title,
@@ -143,7 +143,8 @@ async function main() {
           startDate,
           endDate,
           FK_cityId: cityId,
-          imageUrl
+          imageUrl,
+          maxCapacity : Math.floor(Math.random() * 5000) // random capacity between 100 and 5000
         }
       })
     }

@@ -47,7 +47,8 @@ model Event {
   endDate     DateTime
   description String?
   isOutdoor   Boolean      @default(false)
-  nbGuests    Int
+  nbGuests    Int?
+  maxCapacity Int?
   title       String       @db.VarChar(100)
   weather     Json?
   imageUrl    String?      @db.VarChar(250)
