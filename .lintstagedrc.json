@@ -1,7 +1,6 @@
 {
   "api/src/**/*.{ts,tsx}": [
     "api/node_modules/.bin/eslint --fix",
-    "eslint --fix",
     "prettier --write"
   ],
   "web/src/**/*.php": [
