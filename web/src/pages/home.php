@@ -52,7 +52,7 @@ $months = [
 <div id="event-research" class="event-research d-flex flex-column align-items-center justify-content-center" style="background-color: var(--bg-color);">
 
     <form class="w-100 d-flex flex-column align-items-center"
-        action="../index.php" method="get">
+        action="<?= url('pages/explore.php') ?>" method="get">
 
         <!-- Text -->
         <div class="event-research-text text-center mb-5" style="width: 75%;">

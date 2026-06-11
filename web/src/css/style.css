@@ -121,7 +121,7 @@ a {
 }
 
 /* ====================== */
-/* Partie recommandations */
+/* Recommendation partons */
 /* ====================== */
 
 .explore-layout {
@@ -161,8 +161,8 @@ a {
   width: 150px;
   height: 150px;
   border-radius: 8px;
-  object-fit: cover; /*recadrage eventuel de l'image*/
-  flex-shrink: 0; /*pas de reduction dimage*/
+  object-fit: cover; 
+  flex-shrink: 0; 
 }
 
 .recommendation-content {
@@ -234,7 +234,7 @@ a {
 }
 
 /* ============================= */
-/* Partie détails (droite) TOP 1 */
+/* Details part (right) TOP 1 */
 /* ============================= */
 
 .explore-details {
@@ -273,7 +273,7 @@ a {
 }
 
 /* =============================== */
-/* Partie détails (droite) AVERAGE */
+/* Details part (right) AVERAGE    */
 /* =============================== */
 
 .info-grid {
@@ -312,20 +312,162 @@ a {
   border-right: 1px solid var(--color-border);
 }
 
-.weather-stats strong {
-  display: block;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--color-primary);
+.weather-stats strong span{
+    display: inline-block;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-primary);
 }
 
-.weather-stats small {
-  font-size: 16px;
+.weather-stats div span {
+    font-size: 20px;
 }
 
 .weather-stats span {
-  display: block;
-  color: var(--color-tertiary);
-  font-size: 10px;
-  font-weight: 800;
+    display: block;
+    color: var(--color-tertiary);
+    font-size: 10px;
+    font-weight: 800;
 }
+
+/* ================== */
+/* CALENDRIER EXPLORE */
+/* ================== */
+
+.travel-score {
+    margin-top: 24px;
+    padding: 20px;
+    background-color: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-soft);
+}
+
+.travel-score-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.travel-score-header h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--color-primary);
+    margin-bottom: 4px;
+}
+
+.travel-score-header p {
+    margin: 0;
+    color: var(--color-tertiary);
+}
+
+.travel-score-legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--color-tertiary);
+}
+
+.legend-box {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.calendar-weekdays div {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--color-tertiary);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.calendar-day {
+    min-height: 72px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 8px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-family: inherit;
+}
+
+.calendar-day-number {
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.calendar-day-score {
+    font-size: 12px;
+    font-weight: 700;
+    align-self: flex-end;
+}
+
+/* ===================================== */
+/* Color calendar according rating score */
+/* ===================================== */
+
+.score-high {
+    background-color: #1C7C72;
+    color: white;
+}
+
+.score-medium {
+    background-color: #DCE2E7;
+    color: var(--color-primary);
+}
+
+.score-low {
+    background-color: #FFD6D6;
+    color: #C93535;
+}
+
+.score-unknown {
+    background-color: #F1F1F5;
+    color: #A1A1AA;
+}
+
+.outside-month {
+    opacity: 0.45;
+}
+
+
+.calendar-day.selected-start,
+.calendar-day.selected-range {
+    filter: brightness(0.85);
+    transform: scale(0.96);
+    box-shadow: inset 0 0 0 999px rgba(7, 19, 46, 0.18);
+}
+
+.booking-form {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.booking-form button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+
