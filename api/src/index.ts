@@ -2,6 +2,8 @@ import 'dotenv/config'
 import express from 'express'
 import { prisma } from './client.js'
 import type { Request, Response, NextFunction } from 'express';
+import swaggerUi from 'swagger-ui-express'
+import YAML from 'yamljs'
 import { authRouter } from './auth/auth.router.js'
 import { userRouter } from './user/user.router.js'
 import { cityRouter } from './city/city.router.js'
@@ -13,6 +15,10 @@ import { recommendationRouter } from './recommendation/recommendation.router.js'
 export const app = express();
 
 app.use(express.json());
+
+// Documentation Swagger (OpenAPI) disponible sur /api-docs
+const swaggerDocument = YAML.load('./swagger.yaml')
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 const port = process.env.API_PORT || 3070
 
