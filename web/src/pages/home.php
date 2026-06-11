@@ -28,7 +28,28 @@ $months = [
 ?>
 
 <!-- Main Body -->
-<div class="event-research d-flex flex-column align-items-center justify-content-center" style="background-color: var(--bg-color);">
+<div class="home-main-display d-flex flex-column align-items-center justify-content-center">
+
+    <div class="home-main-display-text text-white row w-75 h-50">
+        <h1 style="font-size: 100px;" class="mb-3">EventSpot</h1>
+        <h2>Planifiez vos événements avec précision.</h2>
+        <h2 class="mb-5"><strong>La rencontre de la science météo et de l'expertise touristique.</strong></h2>
+
+
+    </div>
+
+    <div class="home-main-buttons row h-25 text-white flex justify-content-center">
+
+        <a href="#" class="btn-cta btn" style="background-color: var(--color-green);">Commencer l'analyse</a>
+        <span class="text-white "><i class="bi bi-check-circle"></i>Données Temps Réel</span>
+
+    </div>
+
+</div>
+
+
+
+<div id="event-research" class="event-research d-flex flex-column align-items-center justify-content-center" style="background-color: var(--bg-color);">
 
     <form class="w-100 d-flex flex-column align-items-center"
         action="../index.php" method="get">
@@ -98,7 +119,7 @@ $months = [
 
                         <div class="col-6 pe-0 d-flex flex-column">
                             <span class="text-uppercase fw-bold small mb-2">Durée</span>
-                            <select class="form-select py-2">
+                            <select class="form-select py-2" name="event_duration">
                                 <?php for ($i = 1; $i <= 20; $i++): ?>
                                     <option value="<?= $i ?>"><?= $i ?> <?= $i >
  1
@@ -145,8 +166,46 @@ $months = [
 
 <style>
 
+.home-main-display {
+    position: relative;
+    height: calc(100vh - 70px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.home-main-display::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("../img/background-image-homepage.png");
+    background-size: cover;
+    background-position: center;
+
+    filter: brightness(30%) grayscale(100%);
+
+    z-index: -1;
+}
+
+.home-main-display-text {
+    position: relative;
+    z-index: 1;
+    /*background-color: yellow !important;*/
+
+}
+
+.home-main-buttons {
+    background-color: red !important;
+    width: 30%;
+}
+
 .event-research {
-    min-height: calc(100vh - 70px);
+    min-height: 100vh;
     padding: 20px 0;
 }
 
@@ -175,6 +234,15 @@ $months = [
 
 .form-control::placeholder {
     color: darkgray;
+}
+
+.btn-cta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: x-large;
+    border-radius: 15px;
 }
 
 </style>
