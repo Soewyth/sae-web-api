@@ -6,7 +6,28 @@ import { EnumType, EnumMethod } from '@prisma/client'
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })
 
-// function maps type from datatourisme to our event type in our db 
+// Récupère l'URL de la photo principale d'une ville depuis l'API REST de Wikipédia en français.
+// Renvoie null si aucune image n'est trouvée, si la requête échoue, ou si l'URL est trop longue
+// pour la colonne imageUrl (VarChar(250)).
+async function fetchCityImageUrl(cityName: string): Promise<string | null> {
+  try {
+    const title = encodeURIComponent(cityName)
+    const response = await fetch(
+      `https://fr.wikipedia.org/api/rest_v1/page/summary/${title}`,
+      { headers: { 'User-Agent': 'sae-web-api-seed/1.0 (https://github.com/sae-web-api)' } }
+    )
+    if (!response.ok) return null
+    const data = await response.json()
+    const url: unknown = data.thumbnail?.source ?? data.originalimage?.source ?? null
+    // imageUrl column is limited to 250 chars, skip URLs that don't fit
+    if (typeof url === 'string' && url.length <= 250) return url
+    return null
+  } catch {
+    return null
+  }
+}
+
+// function maps type from datatourisme to our event type in our db
 function mapType(types: string[]): string {
   if (types.includes('Festival')) return 'FESTIVAL'
   if (types.includes('Concert')) return 'CONCERT'
@@ -54,7 +75,7 @@ async function main() {
   // ***                ***
   // Fetch cities from DataTourisme( API)
   // create a map to store cities with their insee code as key
-  const cities = new Map<string, { name: string; inseeCode: string; longitude?: number; latitude?: number; postalCode?: string; id?: string; region: string }>();
+  const cities = new Map<string, { name: string; inseeCode: string; longitude?: number; latitude?: number; postalCode?: string; id?: string; region: string; imageUrl?: string | null }>();
   for (let page = 1; page <= 3; page++) {
     const response = await fetch(
       `https://api.datatourisme.fr/v1/entertainmentAndEvent?api_key=${process.env.DATATOURISME_API_KEY}&fields=isLocatedAt,hasMainRepresentation&lang=fr&page_size=100&page=${page}`
@@ -91,6 +112,13 @@ async function main() {
     }
   }
 
+  // Enrich each city with its photo URL from the Wikipedia API (in parallel)
+  await Promise.all(
+    [...cities.values()].map(async (city) => {
+      city.imageUrl = await fetchCityImageUrl(city.name)
+    })
+  )
+
   // Insert cities into the database
   for (const city of cities.values()) {
     const created = await prisma.city.create({
@@ -100,10 +128,11 @@ async function main() {
         longitude: city.longitude ?? 0,
         latitude: city.latitude ?? 0,
         postalCode: city.postalCode ?? '00000',
-        region: city.region
+        region: city.region,
+        imageUrl: city.imageUrl ?? null
       }
     })
-    city.id = created.id; // for store the city id after creation in db 
+    city.id = created.id; // for store the city id after creation in db
   }
 
   // ***                ***
