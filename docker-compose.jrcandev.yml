@@ -12,7 +12,7 @@ services:
 
   api:
     container_name: ${NAME}_api
-    build: 
+    build:
       context: ./api
       dockerfile: Dockerfile.jrcandev
     restart: unless-stopped
@@ -35,7 +35,7 @@ services:
 
   web:
     container_name: ${NAME}_web
-    build: 
+    build:
       context: ./web
       dockerfile: Dockerfile
     restart: unless-stopped

@@ -1,14 +1,121 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  // output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  // Fields
+  id        String   @id @default(uuid())
+  email     String   @unique @db.VarChar(100)
+  password  String   @db.VarChar(250)
+  username  String   @db.VarChar(50)
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  createdBy String?
+
+  // Relations
+  logs        Log[]        @relation("Log_user")
+  userReviews UserReview[] @relation("UserReview_user")
+}
+
+model City {
+  // Fields
+  id         String  @id @default(uuid())
+  name       String  @db.VarChar(100)
+  latitude   Float
+  longitude  Float
+  inseeCode  String  @unique @db.VarChar(5)
+  postalCode String  @db.VarChar(5)
+  imageUrl   String? @db.VarChar(250)
+  region     String  @db.VarChar(100)
+
+  // Relations
+  events Event[] @relation("Event_city")
+}
+
+model Event {
+  // Fields
+  id          String       @id @default(uuid())
+  type        EnumType
+  startDate   DateTime
+  endDate     DateTime
+  description String?
+  isOutdoor   Boolean      @default(false)
+  nbGuests    Int?
+  maxCapacity Int?
+  title       String       @db.VarChar(100)
+  weather     Json?
+  imageUrl    String?      @db.VarChar(250)
+  createdAt   DateTime     @default(now())
+  createdBy   String?
+  // Fields FK
+  FK_cityId   String
+  // Relations
+  city        City         @relation(name: "Event_city", fields: [FK_cityId], references: [id])
+  reviews     UserReview[] @relation(name: "UserReview_event")
+  logs        Log[]        @relation(name: "Log_event")
+}
+
+model UserReview {
+  // Fields
+  id         String   @id @default(uuid())
+  rating     Int
+  comment    String?
+  FK_EventId String
+  createdAt  DateTime @default(now())
+  createdBy  String?
+
+  // Fields FK
+  FK_userId String
+
+  // Relations
+  event Event @relation(name: "UserReview_event", fields: [FK_EventId], references: [id])
+  user  User  @relation(name: "UserReview_user", fields: [FK_userId], references: [id])
+  logs  Log[] @relation(name: "Log_review")
+}
+
+model Log {
+  // Fields
+  id        String     @id @default(uuid())
+  method    EnumMethod
+  date      DateTime   @default(now())
+  createdAt DateTime   @default(now())
+  createdBy String?
+
+  // Fields FK
+  FK_userId   String?
+  fk_eventId  String?
+  fk_reviewId String?
+
+  // Relations
+  user   User?       @relation("Log_user", fields: [FK_userId], references: [id])
+  event  Event?      @relation("Log_event", fields: [fk_eventId], references: [id])
+  review UserReview? @relation("Log_review", fields: [fk_reviewId], references: [id])
+}
+
+enum EnumMethod {
+  GET
+  POST
+  PUT
+  DELETE
+}
+
+enum EnumType {
+  FESTIVAL
+  CONCERT
+  MARCHE
+  CONFERENCE
+  RUNNING
+  SPORT
+  SPECTACLE
+  EXPOSITION
+  ANIMATION
+  CINEMA
+  THEATRE
 }

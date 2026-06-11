@@ -1,0 +1,875 @@
+openapi: 3.0.3
+info:
+  title: SAE Web API
+  description: >
+    API de gestion d'événements, de villes, d'avis (reviews), d'utilisateurs,
+    de logs et de recommandations de villes basées sur la météo et la
+    fréquentation.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3070
+    description: Serveur de développement local
+
+tags:
+  - name: Health
+    description: État de santé de l'API
+  - name: Auth
+    description: Inscription et authentification
+  - name: Users
+    description: Gestion des utilisateurs
+  - name: Cities
+    description: Consultation des villes
+  - name: Events
+    description: Gestion des événements
+  - name: Reviews
+    description: Gestion des avis sur les événements
+  - name: Logs
+    description: Consultation des logs
+  - name: Recommendations
+    description: Recommandations de villes
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        Jeton JWT obtenu via POST /auth/login.
+        À envoyer dans l'en-tête `Authorization: Bearer <token>`.
+
+  schemas:
+    EnumType:
+      type: string
+      enum:
+        - FESTIVAL
+        - CONCERT
+        - MARCHE
+        - CONFERENCE
+        - RUNNING
+        - SPORT
+        - SPECTACLE
+        - EXPOSITION
+        - ANIMATION
+        - CINEMA
+        - THEATRE
+
+    EnumMethod:
+      type: string
+      enum: [GET, POST, PUT, DELETE]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        username:
+          type: string
+      example:
+        id: "0f5e6d7c-1234-4abc-9def-0123456789ab"
+        email: "user@example.com"
+        username: "johndoe"
+
+    City:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        inseeCode:
+          type: string
+        postalCode:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        region:
+          type: string
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/EnumType'
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        description:
+          type: string
+          nullable: true
+        isOutdoor:
+          type: boolean
+        nbGuests:
+          type: integer
+          nullable: true
+        maxCapacity:
+          type: integer
+          nullable: true
+        title:
+          type: string
+        weather:
+          type: object
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          nullable: true
+        FK_cityId:
+          type: string
+          format: uuid
+
+    EventInput:
+      type: object
+      required: [type, startDate, endDate, isOutdoor, nbGuests, title, FK_cityId]
+      properties:
+        type:
+          $ref: '#/components/schemas/EnumType'
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        description:
+          type: string
+        isOutdoor:
+          type: boolean
+        nbGuests:
+          type: integer
+        title:
+          type: string
+        weather:
+          type: object
+        FK_cityId:
+          type: string
+          format: uuid
+      example:
+        type: CONCERT
+        startDate: "2026-07-14T20:00:00.000Z"
+        endDate: "2026-07-14T23:00:00.000Z"
+        description: "Concert en plein air"
+        isOutdoor: true
+        nbGuests: 1200
+        title: "Festival d'été"
+        FK_cityId: "0f5e6d7c-1234-4abc-9def-0123456789ab"
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        rating:
+          type: integer
+        comment:
+          type: string
+          nullable: true
+        FK_EventId:
+          type: string
+          format: uuid
+        FK_userId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          nullable: true
+
+    ReviewInput:
+      type: object
+      required: [rating]
+      properties:
+        rating:
+          type: integer
+          minimum: 0
+          maximum: 5
+        comment:
+          type: string
+      example:
+        rating: 4
+        comment: "Très bon événement"
+
+    Log:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        method:
+          $ref: '#/components/schemas/EnumMethod'
+        date:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          nullable: true
+        FK_userId:
+          type: string
+          nullable: true
+        fk_eventId:
+          type: string
+          nullable: true
+        fk_reviewId:
+          type: string
+          nullable: true
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        error:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Jeton manquant, invalide ou expiré
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Ressource introuvable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Requête invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServerError:
+      description: Erreur serveur
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Vérifier l'état de l'API et de la base de données
+      responses:
+        '200':
+          description: API et base de données opérationnelles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  api: { type: string, example: up }
+                  database: { type: string, example: up }
+        '503':
+          description: Base de données indisponible
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Créer un nouvel utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, username]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+                username: { type: string }
+              example:
+                email: "user@example.com"
+                password: "monMotDePasse"
+                username: "johndoe"
+      responses:
+        '201':
+          description: Utilisateur créé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  user: { $ref: '#/components/schemas/User' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authentifier un utilisateur et obtenir un jeton JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+              example:
+                email: "user@example.com"
+                password: "monMotDePasse"
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  token: { type: string }
+                  user:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      email: { type: string }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /user:
+    get:
+      tags: [Users]
+      summary: Lister tous les utilisateurs
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des utilisateurs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result:
+                    type: array
+                    items: { $ref: '#/components/schemas/User' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /user/{id}:
+    get:
+      tags: [Users]
+      summary: Récupérer un utilisateur par son id
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Utilisateur récupéré
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result: { $ref: '#/components/schemas/User' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags: [Users]
+      summary: Mettre à jour un utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Au moins un champ doit être fourni
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+                username: { type: string }
+      responses:
+        '200':
+          description: Utilisateur mis à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result: { $ref: '#/components/schemas/User' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [Users]
+      summary: Supprimer un utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Utilisateur supprimé
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /city:
+    get:
+      tags: [Cities]
+      summary: Lister toutes les villes
+      responses:
+        '200':
+          description: Liste des villes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result:
+                    type: array
+                    items: { $ref: '#/components/schemas/City' }
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /city/{cityId}:
+    get:
+      tags: [Cities]
+      summary: Récupérer une ville par son id
+      parameters:
+        - name: cityId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Ville récupérée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result: { $ref: '#/components/schemas/City' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /city/{cityId}/events:
+    get:
+      tags: [Cities]
+      summary: Lister les événements d'une ville
+      parameters:
+        - name: cityId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Événements de la ville
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result:
+                    type: array
+                    items: { $ref: '#/components/schemas/Event' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /event:
+    get:
+      tags: [Events]
+      summary: Lister tous les événements
+      responses:
+        '200':
+          description: Liste des événements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result:
+                    type: array
+                    items: { $ref: '#/components/schemas/Event' }
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags: [Events]
+      summary: Créer un événement
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventInput'
+      responses:
+        '201':
+          description: Événement créé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result: { $ref: '#/components/schemas/Event' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /event/{id}:
+    get:
+      tags: [Events]
+      summary: Récupérer un événement par son id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Événement récupéré
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result: { $ref: '#/components/schemas/Event' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    put:
+      tags: [Events]
+      summary: Mettre à jour un événement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventInput'
+      responses:
+        '200':
+          description: Événement mis à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  event: { $ref: '#/components/schemas/Event' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [Events]
+      summary: Supprimer un événement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Événement supprimé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  event: { $ref: '#/components/schemas/Event' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /event/{id}/reviews:
+    get:
+      tags: [Events]
+      summary: Lister les avis d'un événement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Avis de l'événement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result:
+                    type: array
+                    items: { $ref: '#/components/schemas/Review' }
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /event/{id}/review:
+    post:
+      tags: [Reviews]
+      summary: Créer un avis pour un événement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant de l'événement
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewInput'
+      responses:
+        '201':
+          description: Avis créé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result: { $ref: '#/components/schemas/Review' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /review/{id}:
+    put:
+      tags: [Reviews]
+      summary: Mettre à jour un avis
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewInput'
+      responses:
+        '200':
+          description: Avis mis à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  review: { $ref: '#/components/schemas/Review' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    delete:
+      tags: [Reviews]
+      summary: Supprimer un avis
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Avis supprimé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  review: { $ref: '#/components/schemas/Review' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /logs:
+    get:
+      tags: [Logs]
+      summary: Lister les logs
+      description: >
+        Si l'utilisateur authentifié est administrateur, renvoie tous les logs.
+        Sinon, renvoie uniquement les logs le concernant.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result:
+                    type: array
+                    items: { $ref: '#/components/schemas/Log' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /recommendations:
+    get:
+      tags: [Recommendations]
+      summary: Obtenir un classement des villes recommandées
+      description: >
+        Calcule un score par ville selon la météo historique, la capacité
+        moyenne des événements et le nombre d'événements concurrents.
+      parameters:
+        - name: month
+          in: query
+          required: true
+          description: Mois (1 à 12)
+          schema: { type: integer, minimum: 1, maximum: 12 }
+        - name: duration
+          in: query
+          required: true
+          description: Durée en jours (> 0)
+          schema: { type: integer, minimum: 1 }
+        - name: isOutdoor
+          in: query
+          required: true
+          description: Événement en extérieur
+          schema: { type: boolean }
+        - name: nbGuests
+          in: query
+          required: true
+          description: Nombre de participants attendus (> 0)
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Classement des villes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        city: { $ref: '#/components/schemas/City' }
+                        score: { type: number }
+                        avgTemp: { type: number }
+                        avgMaxCapacity: { type: number }
+                        days:
+                          type: array
+                          items: { type: object }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
