@@ -8,53 +8,51 @@ $activePage = 'login';
 $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
+  $email = $_POST['email'] ?? '';
+  $password = $_POST['password'] ?? '';
 
-    // prepa du json
-    $payload = json_encode([
-        'email' => $email,
-        'password' => $password
-    ]);
+  // prepa du json
+  $payload = json_encode([
+    'email' => $email,
+    'password' => $password,
+  ]);
 
-    $context = stream_context_create([
-        'http' => [
-            'method' => 'POST',
-            'header' => 
-                "Content-Type: application/json\r\n" .
-                "Accept: application/json\r\n",
-            'content' => $payload,
-            'ignore_errors' => true
-        ]
-    ]);
+  $context = stream_context_create([
+    'http' => [
+      'method' => 'POST',
+      'header' =>
+        "Content-Type: application/json\r\n" . "Accept: application/json\r\n",
+      'content' => $payload,
+      'ignore_errors' => true,
+    ],
+  ]);
 
-    // envoi la requete a API
-    $response = file_get_contents(API_BASE_URL . '/auth/login', false, $context);
-    $data = json_decode($response, true);
+  // envoi la requete a API
+  $response = file_get_contents(API_BASE_URL . '/auth/login', false, $context);
+  $data = json_decode($response, true);
 
-    // stockage de lutilisateur en session
-    if (isset($data['token'], $data['user'])) {
-        $_SESSION['token'] = $data['token'];
-        $_SESSION['user'] = $data['user'];
+  // stockage de lutilisateur en session
+  if (isset($data['token'], $data['user'])) {
+    $_SESSION['token'] = $data['token'];
+    $_SESSION['user'] = $data['user'];
 
-        header('Location: ' . url('index.php'));
-        exit;
-    }
+    header('Location: ' . url('index.php'));
+    exit();
+  }
 
-    $error = $data['message'] ?? 'Identifiants incorrects.';
+  $error = $data['message'] ?? 'Identifiants incorrects.';
 }
 
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/navbar.php';
-
 ?>
 
-<main class="page-wrapper">
-    <div class="container py-5">
+<main class="page-wrapper w-100" style="height: calc(100vh - 70px);">
+    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
 
         <h1>Connexion</h1>
 
-        <?php if ($error) : ?>
+        <?php if ($error): ?>
             <div class="alert alert-danger">
                 <?= htmlspecialchars($error) ?>
             </div>
@@ -64,22 +62,22 @@ require_once __DIR__ . '/../includes/navbar.php';
 
             <div class="mb-3">
                 <label for="email" class="form-label">Adresse email</label>
-                <input 
-                    type="email" 
-                    name="email" 
-                    id="email" 
-                    class="form-control" 
+                <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    class="form-control"
                     required
                 >
             </div>
 
             <div class="mb-3">
                 <label for="password" class="form-label">Mot de passe</label>
-                <input 
-                    type="password" 
-                    name="password" 
-                    id="password" 
-                    class="form-control" 
+                <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    class="form-control"
                     required
                 >
             </div>
@@ -96,5 +94,6 @@ require_once __DIR__ . '/../includes/navbar.php';
 
     </div>
 </main>
+
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
