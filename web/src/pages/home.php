@@ -28,22 +28,26 @@ $months = [
 ?>
 
 <!-- Main Body -->
-<div class="home-main-display d-flex flex-column align-items-center justify-content-center">
+<div class="home-main-display ">
 
-    <div class="home-main-display-text text-white row w-75 h-50">
-        <h1 style="font-size: 100px;" class="mb-3">EventSpot</h1>
-        <h2>Planifiez vos événements avec précision.</h2>
-        <h2 class="mb-5"><strong>La rencontre de la science météo et de l'expertise touristique.</strong></h2>
+    <div class="home-main-display">
+        <div class="home-main-display-text text-white w-75 user-select-none">
+            <h1 class="mb-3"> EventSpot</h1>
+            <h2>Planifiez vos événements avec précision.</h2>
+            <h2 class="mb-5"><strong>La rencontre de la science météo et de l'expertise touristique.</strong></h2>
 
-
+            <div class="home-main-buttons">
+                <a href="#event-research" class="btn-cta text-light" style="background-color: var(--color-green);">
+                    Commencer l'analyse &nbsp<i class="bi bi-chevron-double-down"></i>
+                </a>
+                <span class="real-time-badge">
+                    <i class="bi bi-check-circle"></i> Données Temps Réel
+                </span>
+            </div>
+        </div>
     </div>
 
-    <div class="home-main-buttons row h-25 text-white flex justify-content-center">
 
-        <a href="#" class="btn-cta btn" style="background-color: var(--color-green);">Commencer l'analyse</a>
-        <span class="text-white "><i class="bi bi-check-circle"></i>Données Temps Réel</span>
-
-    </div>
 
 </div>
 
@@ -174,6 +178,11 @@ $months = [
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    width: 100%;
+
+    h1, h2 {
+        margin-left: 10vw;
+    }
 }
 
 .home-main-display::before {
@@ -186,63 +195,54 @@ $months = [
     background-image: url("../img/background-image-homepage.png");
     background-size: cover;
     background-position: center;
-
     filter: brightness(30%) grayscale(100%);
-
     z-index: -1;
-}
 
-.home-main-display-text {
-    position: relative;
-    z-index: 1;
-    /*background-color: yellow !important;*/
-
-}
-
-.home-main-buttons {
-    background-color: red !important;
-    width: 30%;
 }
 
 .event-research {
     min-height: 100vh;
-    padding: 20px 0;
+
+    padding: 60px 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.btn-radio {
-    border: 1px solid #ccc;
-    background-color: #fff;
-    color: #495057;
-}
-
-.btn-check:checked + .btn-radio {
-    background-color: var(--color-green, #198754) !important;
-    border-color: var(--color-green, #198754) !important;
-    color: white !important;
-}
-
-.row {
-
-    div, select {
-        height: 20%;
-    }
-
-    textarea {
-        height: 40%;
-    }
-}
-
-.form-control::placeholder {
-    color: darkgray;
+.home-main-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 30px;
+    width: 100%;
+    justify-content: center;
 }
 
 .btn-cta {
     display: flex;
     justify-content: center;
     align-items: center;
-
-    font-size: x-large;
-    border-radius: 15px;
+    font-size: 24px;
+    border-radius: 50px;
+    padding: 15px 40px;
+    text-decoration: none;
+    font-weight: 600;
 }
 
+.real-time-badge {
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+@media (min-width: 768px) {
+  h1 { font-size: 3.5rem; }
+}
+
+@media (min-width: 1200px) {
+  h1 { font-size: 6rem; }
+}
 </style>

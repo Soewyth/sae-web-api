@@ -5,6 +5,8 @@ require_once __DIR__ . '/main.inc.php';
 $pageTitle = 'Accueil';
 $activePage = 'home';
 
+error_reporting(0);
+
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/includes/navbar.php';
 
