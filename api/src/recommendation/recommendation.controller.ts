@@ -168,7 +168,7 @@ export const getTopCities = async (req: Request, res: Response) => {
                     '&longitude=' + city.longitude + // from bdd
                     '&start_date=' + start + // from function
                     '&end_date=' + fetchEndDate + // from function
-                    '&daily=temperature_2m_max,temperature_2m_min&timezone=auto'; // from the API
+                    '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,sunshine_duration&timezone=auto'; // from the API
 
                 const response = await fetch(url);
                 if (!response.ok) return null; // skip city if fetch fails
@@ -178,6 +178,8 @@ export const getTopCities = async (req: Request, res: Response) => {
                         time: string[];
                         temperature_2m_max: Array<number | null>;
                         temperature_2m_min: Array<number | null>;
+                        precipitation_sum: Array<number | null>;
+                        sunshine_duration: Array<number | null>;
                     };
                 };
 
@@ -185,11 +187,15 @@ export const getTopCities = async (req: Request, res: Response) => {
                 const dailyScores = [];
                 let total = 0;
                 let validDays = 0;
+                let totalPrecip = 0;
+                let totalSun = 0;
 
                 for (let i = 0; i < data.daily.time.length; i++) {
                     const date = data.daily.time[i];
                     const maxTemp = data.daily.temperature_2m_max[i];
                     const minTemp = data.daily.temperature_2m_min[i];
+                    const dayPrecip = data.daily.precipitation_sum[i];
+                    const daySun = data.daily.sunshine_duration[i];
 
                     if (!date || maxTemp == null || minTemp == null) continue; // skip null values
 
@@ -207,6 +213,8 @@ export const getTopCities = async (req: Request, res: Response) => {
                     // Only include days in selectable range
                     if (isDateInRange(date, start, end)) {
                         total += avgTemp;
+                        totalPrecip += dayPrecip ?? 0;
+                        totalSun += daySun ?? 0;
                         validDays++;
                     }
                 }
@@ -224,10 +232,14 @@ export const getTopCities = async (req: Request, res: Response) => {
 
                 return {
                     city,
-                    avgTemp: Math.round(avgTemp * 10) / 10,
                     avgMaxCapacity: Math.round(avgMaxCapacity),
                     score: globalScore,
                     days: dailyScores,
+                    monthlyAverage: {
+                        avgTemp: Math.round(avgTemp * 10) / 10,
+                        avgPrecip: Math.round((totalPrecip / validDays) * 10) / 10,  // mm/day
+                        avgSun: Math.round((totalSun / validDays / 3600) * 10) / 10  // hours (seconds → hours)
+                    }
                 };
             }));
 
