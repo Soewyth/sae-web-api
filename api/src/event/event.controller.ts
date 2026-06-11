@@ -202,7 +202,7 @@ export const putEvent = async (req: Request, res: Response) => {
 
     try {
         //On vérifie si l'event existe
-        const event = prisma.event.findUnique({
+        const event = await prisma.event.findUnique({
             where: {
                 id: eventId
             }
@@ -214,7 +214,7 @@ export const putEvent = async (req: Request, res: Response) => {
             return
         }
         //On vérifie si la ville existe
-        const city = prisma.city.findUnique({
+        const city = await prisma.city.findUnique({
             where: {
                 id: FK_cityId
             }
