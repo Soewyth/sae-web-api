@@ -12,6 +12,10 @@ Plateforme web permettant de recommander les meilleures villes françaises pour 
 - [Docker](https://docs.docker.com/get-docker/) + Docker Compose v2
 - [Make](https://www.gnu.org/software/make/) (`sudo apt install make` sur Debian/Ubuntu)
 - Git
+- **Pour les tests PHP uniquement** : PHP 8.3 CLI + extensions xml + Composer
+  ```bash
+  sudo apt install php8.3-cli php8.3-xml composer
+  ```
 
 ---
 
@@ -100,12 +104,13 @@ Doit retourner : `{"status":"ok","api":"up","database":"up"}`
 make up        # Tout-en-un : build + démarrage + migrations + seed (si base vide)
 make down      # Arrêter les conteneurs (données conservées)
 make restart   # Redémarrer toute la stack (down + up)
-make dev       # Préparer un poste contributeur (husky + dépendances hôte + prisma generate)
+make dev       # Préparer un poste contributeur (husky + npm install + composer install)
 make logs      # Suivre les logs de l'API en temps réel
 make logs s=db # Suivre les logs d'un autre service (ex: db)
 make migrate   # Appliquer les migrations Prisma (idempotent)
 make seed      # Réinitialiser et reseed la base (EFFACE les données)
-make test      # Lancer les tests Jest dans le conteneur
+make test      # Lancer les tests Jest (API) dans le conteneur
+make test:web  # Lancer les tests PHPUnit (web) en local
 make health    # Vérifier que l'API et la base répondent
 make ps        # État des conteneurs
 make clean     # Supprimer conteneurs + volumes (DONNÉES PERDUES)
@@ -137,14 +142,17 @@ sae-web-api/
 │   ├── Dockerfile                  # Image de développement
 │   └── Dockerfile.jrcandev         # Image de production (multi-stage)
 ├── web/
-│   └── src/
-│       ├── pages/                  # Pages PHP (home, explore, login, dashboard…)
-│       ├── class/                  # ApiClient PHP
-│       ├── config/                 # Configuration
-│       ├── css/                    # Styles
-│       ├── js/                     # JavaScript (calendrier, interactions)
-│       ├── index.php
-│       └── main.inc.php
+│   ├── src/
+│   │   ├── pages/                  # Pages PHP (home, explore, login, dashboard…)
+│   │   ├── class/                  # ApiClient PHP
+│   │   ├── config/                 # Configuration
+│   │   ├── css/                    # Styles
+│   │   ├── js/                     # JavaScript (calendrier, interactions)
+│   │   ├── index.php
+│   │   └── main.inc.php
+│   ├── tests/                      # Tests PHPUnit (2 suites, 46 tests)
+│   ├── composer.json
+│   └── phpunit.xml
 ├── docker-compose.yml              # Stack de développement local
 ├── docker-compose.jrcandev.yml     # Stack de production (JrCanDev + Traefik)
 ├── Makefile                        # Commandes simplifiées
@@ -194,13 +202,31 @@ Les données météo sont pré-calculées en base (table `CityWeather`, 269 vill
 
 ## Tests
 
+### API (Jest — dans le conteneur Docker)
+
 ```bash
 make test
 # ou directement :
 docker compose exec api npx jest tests/ --coverage
 ```
 
-Couverture actuelle : **97,06% statements** — 8 suites, 136 tests, 1.461 s.
+Couverture actuelle : **97,06% statements** — 8 suites, 136 tests.
+
+### Web PHP (PHPUnit — en local)
+
+> Prérequis : `sudo apt install php8.3-cli php8.3-xml composer`
+
+```bash
+# Installer PHPUnit une seule fois (comme npm install)
+cd web && composer install
+
+# Lancer les tests
+make test:web
+# ou directement :
+cd web && vendor/bin/phpunit tests/ --colors=always
+```
+
+**46 tests, 64 assertions** — `ApiClient` (appels HTTP mockés) + helpers de `main.inc.php`.
 
 ---
 

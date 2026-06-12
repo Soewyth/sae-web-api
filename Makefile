@@ -30,6 +30,7 @@ up: env network ## Tout-en-un : build + démarrage + migrations + seed (si base 
 dev: ## Prépare un poste de contributeur : hooks git (husky) + dépendances hôte (eslint, prisma, tests)
 	npm install
 	cd api && npm install && npx prisma generate
+	cd web && composer install
 
 down: ## Arrête les conteneurs (les données sont conservées)
 	docker compose down
@@ -78,6 +79,9 @@ db-reset: ## Réinitialise complètement la base (migrations + seed)
 
 test: ## Lance les tests de l'API dans le conteneur
 	docker compose exec -T api npm test
+
+test\:web: ## Lance les tests PHPUnit de l'application web
+	cd web && vendor/bin/phpunit tests/ --colors=always
 
 clean: ## Supprime conteneurs, volumes (DONNÉES PERDUES) et images du projet
 	docker compose down -v --rmi local
