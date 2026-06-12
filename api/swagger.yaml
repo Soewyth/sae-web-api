@@ -224,6 +224,23 @@ components:
           format: uuid
         method:
           $ref: '#/components/schemas/EnumMethod'
+        route:
+          type: string
+          nullable: true
+          description: Route appelée (ex. /event/123)
+        details:
+          type: object
+          nullable: true
+          description: Paramètres de l'appel (query string et corps de requête)
+          properties:
+            query: { type: object }
+            body: { type: object }
+        user:
+          type: object
+          nullable: true
+          description: Utilisateur à l'origine de l'appel
+          properties:
+            username: { type: string }
         date:
           type: string
           format: date-time
@@ -391,71 +408,6 @@ paths:
           $ref: '#/components/responses/ServerError'
 
   /user/{id}:
-    get:
-      tags: [Users]
-      summary: Récupérer un utilisateur par son id
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Utilisateur récupéré
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result: { $ref: '#/components/schemas/User' }
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    put:
-      tags: [Users]
-      summary: Mettre à jour un utilisateur
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              description: Au moins un champ doit être fourni
-              properties:
-                email: { type: string, format: email }
-                password: { type: string, format: password }
-                username: { type: string }
-      responses:
-        '200':
-          description: Utilisateur mis à jour
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result: { $ref: '#/components/schemas/User' }
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
     delete:
       tags: [Users]
       summary: Supprimer un utilisateur
@@ -525,56 +477,6 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /city/{cityId}:
-    get:
-      tags: [Cities]
-      summary: Récupérer une ville par son id
-      parameters:
-        - name: cityId
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Ville récupérée
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result: { $ref: '#/components/schemas/City' }
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /city/{cityId}/events:
-    get:
-      tags: [Cities]
-      summary: Lister les événements d'une ville
-      parameters:
-        - name: cityId
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Événements de la ville
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result:
-                    type: array
-                    items: { $ref: '#/components/schemas/Event' }
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
   /event:
     get:
       tags: [Events]
@@ -622,28 +524,6 @@ paths:
           $ref: '#/components/responses/ServerError'
 
   /event/{id}:
-    get:
-      tags: [Events]
-      summary: Récupérer un événement par son id
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Événement récupéré
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result: { $ref: '#/components/schemas/Event' }
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
     put:
       tags: [Events]
       summary: Mettre à jour un événement
@@ -698,32 +578,6 @@ paths:
                   event: { $ref: '#/components/schemas/Event' }
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /event/{id}/reviews:
-    get:
-      tags: [Events]
-      summary: Lister les avis d'un événement
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Avis de l'événement
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result:
-                    type: array
-                    items: { $ref: '#/components/schemas/Review' }
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -806,75 +660,28 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /review/{id}:
-    put:
-      tags: [Reviews]
-      summary: Mettre à jour un avis
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReviewInput'
-      responses:
-        '200':
-          description: Avis mis à jour
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  review: { $ref: '#/components/schemas/Review' }
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    delete:
-      tags: [Reviews]
-      summary: Supprimer un avis
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Avis supprimé
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  review: { $ref: '#/components/schemas/Review' }
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
   /logs:
     get:
       tags: [Logs]
-      summary: Lister les logs
+      summary: Lister les logs des appels API
       description: >
-        Si l'utilisateur authentifié est administrateur, renvoie tous les logs.
-        Sinon, renvoie uniquement les logs le concernant.
+        Renvoie les logs du plus récent au plus ancien, avec le username de
+        l'utilisateur concerné. Si l'utilisateur authentifié est
+        administrateur, renvoie tous les logs (filtrables par utilisateur et
+        par méthode). Sinon, renvoie uniquement les logs le concernant.
       security:
         - bearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          description: Filtrer par utilisateur (admin uniquement)
+          schema: { type: string, format: uuid }
+        - name: method
+          in: query
+          required: false
+          description: Filtrer par méthode HTTP
+          schema: { $ref: '#/components/schemas/EnumMethod' }
       responses:
         '200':
           description: Liste des logs
@@ -887,6 +694,8 @@ paths:
                   result:
                     type: array
                     items: { $ref: '#/components/schemas/Log' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':

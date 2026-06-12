@@ -113,6 +113,8 @@ model Log {
   // Fields
   id        String     @id @default(uuid())
   method    EnumMethod
+  route     String?
+  details   Json?
   date      DateTime   @default(now())
   createdAt DateTime   @default(now())
   createdBy String?

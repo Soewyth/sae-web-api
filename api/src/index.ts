@@ -10,6 +10,7 @@ import { cityRouter } from './city/city.router.js';
 import { eventRouter } from './event/event.router.js';
 import { reviewRouter } from './review/review.router.js';
 import { logRouter } from './log/log.router.js';
+import { logRequest } from './common/log.middleware.js';
 import { recommendationRouter } from './recommendation/recommendation.router.js';
 import { rankingRouter } from './ranking/ranking.router.js';
 
@@ -53,6 +54,9 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   console.log(`[${timestamp}] Requête reçue : ${req.method} ${req.url}`);
   next(); // Passe à la prochaine fonction middleware ou route
 });
+
+// Journalisation de tous les appels API en base (table Log)
+app.use(logRequest);
 
 app.use('/auth', authRouter);
 app.use('/user', userRouter);

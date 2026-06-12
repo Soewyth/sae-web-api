@@ -31,6 +31,15 @@ $activeSidebar = $activeSidebar ?? ''; ?>
                 <i class="fas fa-users me-3"></i>
                 <span class="hide-on-collapse">Utilisateurs</span>
             </a>
+
+            <a href="<?= url(
+              'pages/logs.php',
+            ) ?>" class="sidebar-link <?= $activeSidebar === 'logs'
+  ? 'active'
+  : '' ?> text-decoration-none p-3">
+                <i class="fas fa-list-ul me-3"></i>
+                <span class="hide-on-collapse">Logs</span>
+            </a>
         <?php endif; ?>
     </div>
 
