@@ -36,7 +36,21 @@ model City {
   region     String  @db.VarChar(100)
 
   // Relations
-  events Event[] @relation("Event_city")
+  events       Event[]       @relation("Event_city")
+  cityWeathers CityWeather[] @relation("CityWeather_city")
+}
+
+model CityWeather {
+  id        String @id @default(uuid())
+  FK_cityId String
+  month     Int
+  avgTemp   Float
+  avgPrecip Float
+  avgSun    Float
+
+  city City @relation(name: "CityWeather_city", fields: [FK_cityId], references: [id])
+
+  @@unique([FK_cityId, month])
 }
 
 model Event {
