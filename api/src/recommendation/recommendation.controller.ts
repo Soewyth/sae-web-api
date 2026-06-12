@@ -200,10 +200,18 @@ export const getTopCities = async (req: Request, res: Response) => {
                     if (!date || maxTemp == null || minTemp == null) continue; // skip null values
 
                     const avgTemp = (maxTemp + minTemp) / 2;
+                    const windowStart = new Date(date);
+                    const windowEnd = new Date(addDays(date, duration - 1));
+                    const eventCount = cityEvents.filter(
+                        (e) => e.startDate <= windowEnd && e.endDate >= windowStart,
+                    ).length;
 
                     // Calculate score for this day and store it with the date and temps for the response
                     dailyScores.push({
                         date,
+                        windowStart: date,
+                        windowEnd: addDays(date, duration - 1),
+                        eventCount,
                         maxTemp,
                         minTemp,
                         avgTemp: Math.round(avgTemp * 10) / 10, // round to 1 decimal
