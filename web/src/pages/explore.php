@@ -1,6 +1,13 @@
 <?php
 require_once __DIR__ . '/../main.inc.php';
 
+requireLogin();
+
+if (!hasExploreSearchParams()) {
+    header('Location: ' . url('index.php'));
+    exit;
+}
+
 $pageTitle = 'Evenements';
 $activePage = 'explore';
 
@@ -55,6 +62,11 @@ try {
     'isOutdoor' => $isOutdoor ? 'true' : 'false',
     'nbGuests' => $participants
   ]);
+
+    // echo '<pre>';
+    // print_r($apiResponse);
+    // echo '</pre>';
+    // exit;
 
     if (!isset($apiResponse['result']) || !is_array($apiResponse['result'])) {
         $errorMessage = $apiResponse['message']

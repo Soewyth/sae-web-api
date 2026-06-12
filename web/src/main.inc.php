@@ -56,3 +56,14 @@ function requireAdmin(): void
         exit;
     }
 }
+
+function hasExploreSearchParams(): bool
+{
+    return isset($_GET['event_start_research'])
+        && !empty($_GET['event_name'])
+        && !empty($_GET['event_type'])
+        && !empty($_GET['event_place'])
+        && !empty($_GET['event_month'])
+        && !empty($_GET['event_duration'])
+        && !empty($_GET['event_participants']);
+}
