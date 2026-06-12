@@ -155,7 +155,7 @@ cf. ./docker-compose.jrcandev.yml
 
 ## 🔐 Variables d'environnement
 
-### `.env`
+### `.env` (unique, à la racine — gitignoré, à créer à la main après le clone)
 ```
 # Docker Compose
 NAME=sae-web-but2-votrenomcompletici
@@ -169,8 +169,24 @@ POSTGRES_PORT=5432
 
 # API
 API_PORT=3070
-DATABASE_URL=postgresql://sae_user:sae_password@db:5432/sae_db
+# localhost = accès depuis l'hôte (prisma, tests). Dans le conteneur api,
+# docker-compose surcharge DATABASE_URL avec l'hôte "db".
+DATABASE_URL=postgresql://sae_user:sae_password@localhost:5432/sae_db
+JWT_SECRET=<demander à l'équipe>
+JWT_EXPIRES_IN='2h'
+DATATOURISME_API_KEY=<demander à l'équipe>
 ```
+
+Une fois ce fichier en place, **une seule commande** construit, démarre, migre et seed tout le projet :
+```bash
+make up
+```
+
+Pour **contribuer** (les hooks git husky/eslint s'exécutent sur la machine, pas dans Docker), installez aussi les dépendances hôte :
+```bash
+make dev
+```
+(`make help` liste toutes les commandes disponibles : logs, test, db-reset, clean, ...)
 
 ---
 

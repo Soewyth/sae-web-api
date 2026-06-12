@@ -33,10 +33,24 @@ model City {
   inseeCode  String  @unique @db.VarChar(5)
   postalCode String  @db.VarChar(5)
   imageUrl   String? @db.VarChar(250)
-  region    String  @db.VarChar(100)
+  region     String  @db.VarChar(100)
 
   // Relations
-  events Event[] @relation("Event_city")
+  events       Event[]       @relation("Event_city")
+  cityWeathers CityWeather[] @relation("CityWeather_city")
+}
+
+model CityWeather {
+  id        String @id @default(uuid())
+  FK_cityId String
+  month     Int
+  avgTemp   Float
+  avgPrecip Float
+  avgSun    Float
+
+  city City @relation(name: "CityWeather_city", fields: [FK_cityId], references: [id])
+
+  @@unique([FK_cityId, month])
 }
 
 model Event {
@@ -48,6 +62,7 @@ model Event {
   description String?
   isOutdoor   Boolean      @default(false)
   nbGuests    Int?
+  maxCapacity Int?
   title       String       @db.VarChar(100)
   weather     Json?
   imageUrl    String?      @db.VarChar(250)

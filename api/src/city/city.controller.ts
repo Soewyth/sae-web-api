@@ -26,6 +26,10 @@ export const getCities = async (_req: Request, res: Response) => {
 export const getCityById = async (req: Request, res: Response) => {
     // On récupère l'id
     const cityId = req.params.cityId
+    if (typeof cityId !== 'string') {
+        res.status(400).json({ error: "Identifiant de ville invalide." })
+        return
+    }
     try {
         //On regarde si la ville existe
         const city = await prisma.city.findUnique({
@@ -58,6 +62,10 @@ export const getCityById = async (req: Request, res: Response) => {
 export const getEventByCity = async (req: Request, res: Response)=> {
     // On récupère l'id de la ville
     const cityId = req.params.cityId
+    if (typeof cityId !== 'string') {
+        res.status(400).json({ error: "Identifiant de ville invalide." })
+        return
+    }
     try {
         //On regarde si la ville existe
         const city = await prisma.city.findUnique({

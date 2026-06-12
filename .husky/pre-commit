@@ -1,1 +1,9 @@
+# Les tâches lint-staged ont besoin des binaires hôte (prettier à la racine,
+# eslint dans api/) : sans ce garde-fou elles échouent en "ENOENT" cryptique.
+if [ ! -x node_modules/.bin/prettier ] || [ ! -x api/node_modules/.bin/eslint ]; then
+  echo "Dépendances hôte manquantes pour le pre-commit (prettier/eslint)."
+  echo "Lancez : make dev"
+  exit 1
+fi
+
 npx lint-staged
