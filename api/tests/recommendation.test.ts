@@ -87,6 +87,10 @@ const uniqueGuests = () => String(100 + queryNonce++);
 
 beforeEach(() => {
   jest.clearAllMocks();
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: false,
+    json: jest.fn(),
+  }) as unknown as typeof fetch;
 });
 
 describe('Recommendation Controller - validation parametres', () => {
@@ -101,6 +105,42 @@ describe('Recommendation Controller - validation parametres', () => {
 
   it('retourne 400 si isOutdoor est invalide', async () => {
     const req = makeReq({ month: '7', duration: '2', isOutdoor: 'maybe', nbGuests: uniqueGuests() });
+    const res = makeRes();
+
+    await getTopCities(req, res);
+
+    expect((res as any).status).toHaveBeenCalledWith(400);
+  });
+
+  it('retourne 400 si duration est absent', async () => {
+    const req = makeReq({ month: '7', isOutdoor: 'true', nbGuests: uniqueGuests() });
+    const res = makeRes();
+
+    await getTopCities(req, res);
+
+    expect((res as any).status).toHaveBeenCalledWith(400);
+  });
+
+  it('retourne 400 si nbGuests est absent', async () => {
+    const req = makeReq({ month: '7', duration: '2', isOutdoor: 'false' });
+    const res = makeRes();
+
+    await getTopCities(req, res);
+
+    expect((res as any).status).toHaveBeenCalledWith(400);
+  });
+
+  it('retourne 400 si month est hors limite', async () => {
+    const req = makeReq({ month: '13', duration: '2', isOutdoor: 'true', nbGuests: uniqueGuests() });
+    const res = makeRes();
+
+    await getTopCities(req, res);
+
+    expect((res as any).status).toHaveBeenCalledWith(400);
+  });
+
+  it('retourne 400 si duration est invalide', async () => {
+    const req = makeReq({ month: '7', duration: '0', isOutdoor: 'false', nbGuests: uniqueGuests() });
     const res = makeRes();
 
     await getTopCities(req, res);
@@ -134,6 +174,35 @@ describe('Recommendation Controller - mode outdoor', () => {
     expect(body.result[0].monthlyAverage.avgTemp).toBe(20);
   });
 
+  it('retourne 0 score temp quand la temperature depasse 40', async () => {
+    mockCityFindMany.mockResolvedValue([cityWithWeather(baseCity, 7, 45)]);
+    mockEventFindMany.mockResolvedValue([]);
+
+    const req = makeReq({ month: '7', duration: '2', isOutdoor: 'true', nbGuests: uniqueGuests() });
+    const res = makeRes();
+
+    await getTopCities(req, res);
+
+    expect((res as any).status).toHaveBeenCalledWith(200);
+    const body = (res as any).json.mock.calls[0][0];
+    expect(body.result[0].monthlyAverage.avgTemp).toBe(45);
+  });
+
+  it('utilise le cache pour une requete identique', async () => {
+    mockCityFindMany.mockResolvedValue([cityWithWeather(baseCity, 7, 20)]);
+    mockEventFindMany.mockResolvedValue([]);
+
+    const query = { month: '7', duration: '2', isOutdoor: 'true', nbGuests: uniqueGuests() };
+    const req = makeReq(query);
+    const res = makeRes();
+
+    await getTopCities(req, res);
+    await getTopCities(req, res);
+
+    expect(mockCityFindMany).toHaveBeenCalledTimes(1);
+    expect((res as any).status).toHaveBeenCalledWith(200);
+  });
+
   it('ignore les villes sans weather pour le mois', async () => {
     mockCityFindMany.mockResolvedValue([
       cityWithWeather(baseCity, 7, 21),
@@ -150,6 +219,21 @@ describe('Recommendation Controller - mode outdoor', () => {
     const body = (res as any).json.mock.calls[0][0];
     expect(body.result).toHaveLength(1);
     expect(body.result[0].city.id).toBe('city-1');
+  });
+
+  it('retourne 0 score events quand il y a 4 evenements ou plus', async () => {
+    mockCityFindMany.mockResolvedValue([cityWithWeather(baseCity, 7, -5)]);
+    const event = makeEvent(10, new Date('2025-07-01'), new Date('2025-07-31'));
+    mockEventFindMany.mockResolvedValue([event, event, event, event]);
+
+    const req = makeReq({ month: '7', duration: '3', isOutdoor: 'true', nbGuests: '500' });
+    const res = makeRes();
+
+    await getTopCities(req, res);
+
+    expect((res as any).status).toHaveBeenCalledWith(200);
+    const body = (res as any).json.mock.calls[0][0];
+    expect(body.result[0].score).toBe(0);
   });
 
   it('retourne max 3 villes', async () => {
@@ -169,6 +253,40 @@ describe('Recommendation Controller - mode outdoor', () => {
     expect((res as any).status).toHaveBeenCalledWith(200);
     const body = (res as any).json.mock.calls[0][0];
     expect(body.result.length).toBeLessThanOrEqual(3);
+  });
+
+  it('remplit les days en outdoor avec le fetch daily', async () => {
+    mockCityFindMany.mockResolvedValue([
+      cityWithWeather({ ...baseCity, id: 'c1', name: 'Paris' }, 7, 20),
+    ]);
+    mockEventFindMany.mockResolvedValue([
+      makeEvent(1000, new Date('2025-07-01'), new Date('2025-07-31')),
+    ]);
+
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({
+        daily: {
+          time: ['2025-07-01'],
+          temperature_2m_max: [30],
+          temperature_2m_min: [20],
+          precipitation_sum: [0],
+          sunshine_duration: [3600],
+        },
+      }),
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const req = makeReq({ month: '7', duration: '1', isOutdoor: 'true', nbGuests: uniqueGuests() });
+    const res = makeRes();
+
+    await getTopCities(req, res);
+
+    expect((res as any).status).toHaveBeenCalledWith(200);
+    const body = (res as any).json.mock.calls[0][0];
+    expect(body.result[0].days).toHaveLength(1);
+    expect(body.result[0].days[0].eventCount).toBe(1);
+    expect(fetchMock).toHaveBeenCalled();
   });
 });
 
@@ -206,6 +324,23 @@ describe('Recommendation Controller - mode indoor', () => {
     expect(body.result.map((r: any) => r.city.name)).toEqual(['Annecy', 'Bordeaux', 'Dijon']);
   });
 
+  it('utilise l id comme dernier critere de tri quand les noms sont identiques', async () => {
+    mockCityFindMany.mockResolvedValue([
+      cityWithWeather({ ...baseCity, id: 'c2', name: 'Nice' }, 10, 20),
+      cityWithWeather({ ...baseCity, id: 'c1', name: 'Nice' }, 10, 20),
+    ]);
+    mockEventFindMany.mockResolvedValue([]);
+
+    const req = makeReq({ month: '10', duration: '1', isOutdoor: 'false', nbGuests: uniqueGuests() });
+    const res = makeRes();
+
+    await getTopCities(req, res);
+
+    expect((res as any).status).toHaveBeenCalledWith(200);
+    const body = (res as any).json.mock.calls[0][0];
+    expect(body.result.map((r: any) => r.city.id)).toEqual(['c1', 'c2']);
+  });
+
   it('calcule avgMaxCapacity depuis les events', async () => {
     mockCityFindMany.mockResolvedValue([cityWithWeather(baseCity, 11, 20)]);
     mockEventFindMany.mockResolvedValue([
@@ -241,6 +376,13 @@ describe('Recommendation Controller - erreur serveur', () => {
 });
 
 describe('Recommendation Router', () => {
+  beforeEach(() => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      json: jest.fn(),
+    }) as unknown as typeof fetch;
+  });
+
   it('GET / retourne 400 si parametres manquants', async () => {
     const res = await request(app).get('/recommendations/');
     expect(res.status).toBe(400);
