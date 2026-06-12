@@ -29,7 +29,7 @@ up: env network ## Tout-en-un : build + démarrage + migrations + seed (si base 
 
 dev: ## Prépare un poste de contributeur : hooks git (husky) + dépendances hôte (eslint, prisma, tests)
 	npm install
-	cd api && npm install
+	cd api && npm install && npx prisma generate
 
 down: ## Arrête les conteneurs (les données sont conservées)
 	docker compose down
