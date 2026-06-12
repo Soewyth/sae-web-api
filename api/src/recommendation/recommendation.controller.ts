@@ -307,7 +307,73 @@ export const getTopCities = async (req: Request, res: Response) => {
         });
 
         const top3 = results.slice(0, 3);
+ // Re-fetch Open-Meteo only for top3 cities to enrich days with daily breakdown
+        if (isOutdoor) {
+            const OPEN_METEO_URL = 'https://archive-api.open-meteo.com/v1/archive';
+            await Promise.all(top3.map(async (result) => {
+                const url =
+                    OPEN_METEO_URL +
+                    '?latitude=' + result.city.latitude +
+                    '&longitude=' + result.city.longitude +
+                    '&start_date=' + start +
+                    '&end_date=' + fetchEndDate +
+                    '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,sunshine_duration&timezone=auto';
 
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) return;
+
+                    const data = await response.json() as {
+                        daily: {
+                            time: string[];
+                            temperature_2m_max: Array<number | null>;
+                            temperature_2m_min: Array<number | null>;
+                            precipitation_sum: Array<number | null>;
+                            sunshine_duration: Array<number | null>;
+                        };
+                    };
+
+                    const dailyScores = [];
+                    // Fetch events for daily breakdown
+                    const cityEvents = await prisma.event.findMany({
+                        where: {
+                            FK_cityId: result.city.id,
+                            startDate: { lte: new Date(fetchEndDate) },
+                            endDate: { gte: new Date(start) },
+                        },
+                    });
+
+                    for (let i = 0; i < data.daily.time.length; i++) {
+                        const date = data.daily.time[i];
+                        const maxTemp = data.daily.temperature_2m_max[i];
+                        const minTemp = data.daily.temperature_2m_min[i];
+                        if (!date || maxTemp == null || minTemp == null) continue;
+
+                        const avgTemp = (maxTemp + minTemp) / 2;
+                        const windowStart = new Date(date);
+                        const windowEnd = new Date(addDays(date, duration - 1));
+                        const eventCount = cityEvents.filter(
+                            (e) => e.startDate <= windowEnd && e.endDate >= windowStart,
+                        ).length;
+
+                        dailyScores.push({
+                            date,
+                            windowStart: date,
+                            windowEnd: addDays(date, duration - 1),
+                            eventCount,
+                            maxTemp,
+                            minTemp,
+                            avgTemp: Math.round(avgTemp * 10) / 10,
+                            score: calcScoreTemp(avgTemp),
+                        });
+                    }
+
+                    result.days = dailyScores;
+                } catch {
+                    // keep days: [] if fetch fails
+                }
+            }));
+        }
         const responseBody = {
             message: 'Top 3 villes récupérées avec succès.',
             month,
