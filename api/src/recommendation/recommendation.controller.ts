@@ -129,7 +129,12 @@ export const getTopCities = async (req: Request, res: Response) => {
 
     // main logic
     try {
-        const cities = await prisma.city.findMany();
+        const cities = await prisma.city.findMany({
+            orderBy: [
+                { name: 'asc' },
+                { id: 'asc' },
+            ],
+        });
         const { start, end } = getDateRange(month); // format "2025-07-01", "2025-07-31"
         const fetchEndDate = addDays(end, duration - 1);
 
@@ -329,8 +334,15 @@ export const getTopCities = async (req: Request, res: Response) => {
             results = cityResults.filter((r) => r !== null) as typeof results;
         }
 
-        // Sort by score descending and keep the top 3
-        results.sort((a, b) => b.score - a.score);
+        // Sort by score descending, then by city name/id for deterministic ordering on ties.
+        results.sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+
+            const byName = a.city.name.localeCompare(b.city.name, 'fr', { sensitivity: 'base' });
+            if (byName !== 0) return byName;
+
+            return a.city.id.localeCompare(b.city.id);
+        });
         const top3 = results.slice(0, 3);
 
         res.status(200).json({

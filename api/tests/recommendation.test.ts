@@ -515,6 +515,26 @@ describe('Recommendation Controller - mode indoor', () => {
     const body = (res as any).json.mock.calls[0][0];
     expect(body.result).toHaveLength(0);
   });
+
+  it('devrait trier de facon deterministe en cas d\'egalite de score', async () => {
+    const cities = [
+      { ...sampleCity, id: 'c4', name: 'Lille' },
+      { ...sampleCity, id: 'c2', name: 'Bordeaux' },
+      { ...sampleCity, id: 'c1', name: 'Annecy' },
+      { ...sampleCity, id: 'c3', name: 'Dijon' },
+    ];
+    mockCityFindMany.mockResolvedValue(cities);
+    mockEventFindMany.mockResolvedValue([]);
+
+    const req = makeReq({ month: '7', duration: '1', isOutdoor: 'false', nbGuests: '50' });
+    const res = makeRes();
+
+    await getTopCities(req, res);
+
+    expect((res as any).status).toHaveBeenCalledWith(200);
+    const body = (res as any).json.mock.calls[0][0];
+    expect(body.result.map((r: any) => r.city.name)).toEqual(['Annecy', 'Bordeaux', 'Dijon']);
+  });
 });
 
 // ─────────────────────── ERREUR SERVEUR ───────────────────────
