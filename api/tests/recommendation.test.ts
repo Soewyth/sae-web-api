@@ -159,6 +159,27 @@ describe('Recommendation Controller - validation parametres', () => {
 });
 
 describe('Recommendation Controller - mode outdoor', () => {
+  it('filtre les villes par region quand le parametre region est fourni', async () => {
+    mockCityFindMany.mockResolvedValue([cityWithWeather(baseCity, 7, 20)]);
+    mockEventFindMany.mockResolvedValue([]);
+
+    const req = makeReq({
+      month: '7',
+      duration: '2',
+      isOutdoor: 'true',
+      nbGuests: uniqueGuests(),
+      region: 'Corse',
+    });
+    const res = makeRes();
+
+    await getTopCities(req, res);
+
+    expect((res as any).status).toHaveBeenCalledWith(200);
+    expect(mockCityFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { region: 'Corse' } }),
+    );
+  });
+
   it('retourne 200 avec une ville ayant CityWeather', async () => {
     mockCityFindMany.mockResolvedValue([cityWithWeather(baseCity, 7, 20)]);
     mockEventFindMany.mockResolvedValue([]);

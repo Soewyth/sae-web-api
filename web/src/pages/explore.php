@@ -61,13 +61,18 @@ $duration = max(1, (int) ($_GET['event_duration'] ?? 1));
 try {
   $api = new ApiClient(API_BASE_URL);
 
-  $apiResponse = $api->get('/recommendations', 
-  [
-    'month' => $monthNumber, 
-    'duration' => $duration, 
-    'isOutdoor' => $isOutdoor ? 'true' : 'false',
-    'nbGuests' => $participants
-  ]);
+    $recommendationParams = [
+        'month' => $monthNumber,
+        'duration' => $duration,
+        'isOutdoor' => $isOutdoor ? 'true' : 'false',
+        'nbGuests' => $participants,
+    ];
+
+    if ($region !== '' && $region !== 'none') {
+        $recommendationParams['region'] = $region;
+    }
+
+    $apiResponse = $api->get('/recommendations', $recommendationParams);
 
     // echo '<pre>';
     // print_r($apiResponse);

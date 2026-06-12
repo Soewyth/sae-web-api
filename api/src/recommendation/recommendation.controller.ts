@@ -81,6 +81,7 @@ export const getTopCities = async (req: Request, res: Response) => {
     const durationParam = req.query.duration;
     const isOutdoorParam = req.query.isOutdoor;
     const nbGuestsParam = req.query.nbGuests;
+    const regionParam = req.query.region;
 
     // validate parameters
     if (typeof monthParam !== 'string') {
@@ -103,11 +104,20 @@ export const getTopCities = async (req: Request, res: Response) => {
         return;
     }
 
+    if (regionParam !== undefined && typeof regionParam !== 'string') {
+        res.status(400).json({ error: 'Le paramètre "region" doit être une chaîne.' });
+        return;
+    }
+
     // parse params
     const month = parseInt(monthParam, 10);
     const duration = parseInt(durationParam, 10);
     const isOutdoor = isOutdoorParam === 'true';
     const nbGuests = parseInt(nbGuestsParam, 10);
+    const normalizedRegion = typeof regionParam === 'string' ? regionParam.trim() : '';
+    const region = normalizedRegion.length > 0 && normalizedRegion.toLowerCase() !== 'none'
+        ? normalizedRegion
+        : null;
 
     // validate values
     if (isNaN(month) || month < 1 || month > 12) {
@@ -126,7 +136,7 @@ export const getTopCities = async (req: Request, res: Response) => {
     }
 
     // Check cache before computing — avoids redundant DB queries for identical requests
-    const cacheKey = `${month}-${duration}-${isOutdoor}-${nbGuests}`;
+    const cacheKey = `${month}-${duration}-${isOutdoor}-${nbGuests}-${region ?? 'all'}`;
     const cached = cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
         res.status(200).json(cached.result);
@@ -142,6 +152,7 @@ export const getTopCities = async (req: Request, res: Response) => {
 
         // Fetch all cities with their pre-seeded weather data for the requested month
         const cities = await prisma.city.findMany({
+            ...(region ? { where: { region } } : {}),
             orderBy: [{ name: 'asc' }, { id: 'asc' }],
             include: { cityWeathers: { where: { month } } },
         });
@@ -380,6 +391,7 @@ export const getTopCities = async (req: Request, res: Response) => {
             duration,
             isOutdoor,
             nbGuests,
+            region,
             startDate: start,
             endDate: end,
             fetchEndDate,
