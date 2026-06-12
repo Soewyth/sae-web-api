@@ -75,19 +75,6 @@ $activePage = $activePage ?? ''; ?>
                         </li>
                     <?php endif; ?>
 
-                    <?php if (isAdmin()): ?>
-                    <li class="nav-item">
-                        <a
-                            class="nav-link <?= $activePage === 'admin'
-                              ? 'active'
-                              : '' ?>"
-                            href="<?= url('pages/admin/index.php') ?>"
-                        >
-                            Admin
-                        </a>
-                    </li>
-                <?php endif; ?>
-
                 </ul>
 
                 <div class="d-flex align-items-center gap-2">
