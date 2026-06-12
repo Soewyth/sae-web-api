@@ -6,7 +6,7 @@ if (!hasExploreSearchParams()) {
     exit;
 }
 
-if (!isset($_SESSION['user'])) {
+if (!isUserLoggedIn()) {
     $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
     $_SESSION['flash_error'] = 'Vous devez être connecté pour accéder aux recommandations.';
 

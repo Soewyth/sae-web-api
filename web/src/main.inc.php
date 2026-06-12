@@ -42,6 +42,9 @@ function isAdmin(): bool
 function requireLogin(): void
 {
     if (!isUserLoggedIn()){
+        $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+        $_SESSION['flash_error'] = 'Vous devez être connecté pour accéder à cette page.';
+
         header('Location: ' . url('pages/login.php'));
         exit;
     }
