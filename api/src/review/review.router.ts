@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import { verifyJWT } from '../common/jwt.middleware.js';
-import {putReview, deleteReview} from './review.controller.js';
+import { getReviews } from './review.controller.js';
 
 export const reviewRouter = Router();
 
 //routes
-reviewRouter.put('/:id', verifyJWT, putReview)
-reviewRouter.delete('/:id', verifyJWT, deleteReview)
+reviewRouter.get('/', verifyJWT, getReviews);

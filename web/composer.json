@@ -1,0 +1,10 @@
+{
+    "name": "sae/web",
+    "description": "Tests unitaires PHP pour l'application web EventSpot",
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

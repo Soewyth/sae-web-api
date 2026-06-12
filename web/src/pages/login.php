@@ -7,6 +7,11 @@ $activePage = 'login';
 
 $error = null;
 
+if (isset($_SESSION['flash_error'])) {
+    $error = $_SESSION['flash_error'];
+    unset($_SESSION['flash_error']);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $email = $_POST['email'] ?? '';
   $password = $_POST['password'] ?? '';
@@ -32,15 +37,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $data = json_decode($response, true);
 
   // stockage de lutilisateur en session
-  if (isset($data['token'], $data['user'])) {
+ if (isset($data['token'], $data['user'])) {
     $_SESSION['token'] = $data['token'];
     $_SESSION['user'] = $data['user'];
 
-    header('Location: ' . url('index.php'));
-    exit();
-  }
+    $redirectUrl = $_SESSION['redirect_after_login'] ?? url('index.php');
+    unset($_SESSION['redirect_after_login']);
 
-  $error = $data['message'] ?? $data['error'] ?? 'Identifiants incorrects.';
+    header('Location: ' . $redirectUrl);
+    exit();
+    }
+
+  $error = $data['message'] ?? ($data['error'] ?? 'Identifiants incorrects.');
 }
 
 require_once __DIR__ . '/../includes/header.php';

@@ -38,6 +38,21 @@ model City {
   // Relations
   events       Event[]       @relation("Event_city")
   cityWeathers CityWeather[] @relation("CityWeather_city")
+  ranking      CityRanking?  @relation("CityRanking_city")
+}
+
+// Classement des villes, recalculé automatiquement par le trigger plpgsql
+// refresh_city_ranking() à chaque ajout/modification d'événement ou de review
+model CityRanking {
+  // Fields
+  FK_cityId  String   @id
+  score      Float    @default(0)
+  eventCount Int      @default(0)
+  rank       Int
+  updatedAt  DateTime @default(now())
+
+  // Relations
+  city City @relation(name: "CityRanking_city", fields: [FK_cityId], references: [id], onDelete: Cascade)
 }
 
 model CityWeather {
@@ -98,6 +113,8 @@ model Log {
   // Fields
   id        String     @id @default(uuid())
   method    EnumMethod
+  route     String?
+  details   Json?
   date      DateTime   @default(now())
   createdAt DateTime   @default(now())
   createdBy String?

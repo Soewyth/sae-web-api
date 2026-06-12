@@ -27,6 +27,8 @@ tags:
     description: Consultation des logs
   - name: Recommendations
     description: Recommandations de villes
+  - name: Ranking
+    description: Classements (villes, événements, régions) basés sur les reviews
 
 components:
   securitySchemes:
@@ -222,6 +224,23 @@ components:
           format: uuid
         method:
           $ref: '#/components/schemas/EnumMethod'
+        route:
+          type: string
+          nullable: true
+          description: Route appelée (ex. /event/123)
+        details:
+          type: object
+          nullable: true
+          description: Paramètres de l'appel (query string et corps de requête)
+          properties:
+            query: { type: object }
+            body: { type: object }
+        user:
+          type: object
+          nullable: true
+          description: Utilisateur à l'origine de l'appel
+          properties:
+            username: { type: string }
         date:
           type: string
           format: date-time
@@ -389,71 +408,6 @@ paths:
           $ref: '#/components/responses/ServerError'
 
   /user/{id}:
-    get:
-      tags: [Users]
-      summary: Récupérer un utilisateur par son id
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Utilisateur récupéré
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result: { $ref: '#/components/schemas/User' }
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    put:
-      tags: [Users]
-      summary: Mettre à jour un utilisateur
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              description: Au moins un champ doit être fourni
-              properties:
-                email: { type: string, format: email }
-                password: { type: string, format: password }
-                username: { type: string }
-      responses:
-        '200':
-          description: Utilisateur mis à jour
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result: { $ref: '#/components/schemas/User' }
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
     delete:
       tags: [Users]
       summary: Supprimer un utilisateur
@@ -467,6 +421,36 @@ paths:
       responses:
         '200':
           description: Utilisateur supprimé
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /user/{id}/events:
+    get:
+      tags: [Users]
+      summary: Lister les événements créés par un utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Événements de l'utilisateur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result:
+                    type: array
+                    items: { $ref: '#/components/schemas/Event' }
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -490,56 +474,6 @@ paths:
                   result:
                     type: array
                     items: { $ref: '#/components/schemas/City' }
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /city/{cityId}:
-    get:
-      tags: [Cities]
-      summary: Récupérer une ville par son id
-      parameters:
-        - name: cityId
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Ville récupérée
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result: { $ref: '#/components/schemas/City' }
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
-  /city/{cityId}/events:
-    get:
-      tags: [Cities]
-      summary: Lister les événements d'une ville
-      parameters:
-        - name: cityId
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Événements de la ville
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result:
-                    type: array
-                    items: { $ref: '#/components/schemas/Event' }
-        '404':
-          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -590,28 +524,6 @@ paths:
           $ref: '#/components/responses/ServerError'
 
   /event/{id}:
-    get:
-      tags: [Events]
-      summary: Récupérer un événement par son id
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Événement récupéré
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result: { $ref: '#/components/schemas/Event' }
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
     put:
       tags: [Events]
       summary: Mettre à jour un événement
@@ -671,32 +583,6 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /event/{id}/reviews:
-    get:
-      tags: [Events]
-      summary: Lister les avis d'un événement
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Avis de l'événement
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  result:
-                    type: array
-                    items: { $ref: '#/components/schemas/Review' }
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-
   /event/{id}/review:
     post:
       tags: [Reviews]
@@ -732,75 +618,70 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /review/{id}:
-    put:
+  /review:
+    get:
       tags: [Reviews]
-      summary: Mettre à jour un avis
+      summary: Lister tous les avis
+      description: >
+        Renvoie tous les avis avec le nom d'utilisateur de l'auteur ainsi que
+        le titre et la ville de l'événement concerné.
       security:
         - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReviewInput'
       responses:
         '200':
-          description: Avis mis à jour
+          description: Liste des avis
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   message: { type: string }
-                  review: { $ref: '#/components/schemas/Review' }
+                  result:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/Review'
+                        - type: object
+                          properties:
+                            user:
+                              type: object
+                              properties:
+                                username: { type: string }
+                            event:
+                              type: object
+                              properties:
+                                title: { type: string }
+                                city:
+                                  type: object
+                                  properties:
+                                    name: { type: string }
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/ServerError'
-    delete:
-      tags: [Reviews]
-      summary: Supprimer un avis
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200':
-          description: Avis supprimé
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string }
-                  review: { $ref: '#/components/schemas/Review' }
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
 
   /logs:
     get:
       tags: [Logs]
-      summary: Lister les logs
+      summary: Lister les logs des appels API
       description: >
-        Si l'utilisateur authentifié est administrateur, renvoie tous les logs.
-        Sinon, renvoie uniquement les logs le concernant.
+        Renvoie les logs du plus récent au plus ancien, avec le username de
+        l'utilisateur concerné. Si l'utilisateur authentifié est
+        administrateur, renvoie tous les logs (filtrables par utilisateur et
+        par méthode). Sinon, renvoie uniquement les logs le concernant.
       security:
         - bearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          description: Filtrer par utilisateur (admin uniquement)
+          schema: { type: string, format: uuid }
+        - name: method
+          in: query
+          required: false
+          description: Filtrer par méthode HTTP
+          schema: { $ref: '#/components/schemas/EnumMethod' }
       responses:
         '200':
           description: Liste des logs
@@ -813,6 +694,8 @@ paths:
                   result:
                     type: array
                     items: { $ref: '#/components/schemas/Log' }
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -871,5 +754,160 @@ paths:
                           items: { type: object }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /ranking/cities:
+    get:
+      tags: [Ranking]
+      summary: Classement des villes par score
+      description: >
+        Classement des villes les plus attractives, lu depuis la table
+        CityRanking maintenue par un trigger plpgsql. Le score d'une ville
+        (sur 5) vaut 70 % de la moyenne des notes de ses événements + 30 %
+        de bonus selon son nombre d'événements (plafonné à 10).
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Numéro de page (défaut 1)
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          required: false
+          description: Nombre d'éléments par page (défaut 20, max 100)
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Classement des villes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  page: { type: integer }
+                  limit: { type: integer }
+                  total: { type: integer }
+                  totalPages: { type: integer }
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rank: { type: integer }
+                        score: { type: number }
+                        eventCount: { type: integer }
+                        city:
+                          type: object
+                          properties:
+                            id: { type: string, format: uuid }
+                            name: { type: string }
+                            region: { type: string }
+                            imageUrl: { type: string, nullable: true }
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /ranking/events:
+    get:
+      tags: [Ranking]
+      summary: Classement des événements par score
+      description: >
+        Classement de tous les événements, triés par score décroissant
+        (score = moyenne des ratings des reviews de l'événement, de 1 à 5,
+        0 si l'événement n'a pas encore de review).
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Numéro de page (défaut 1)
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          required: false
+          description: Nombre d'éléments par page (défaut 20, max 100)
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Classement des événements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  page: { type: integer }
+                  limit: { type: integer }
+                  total: { type: integer }
+                  totalPages: { type: integer }
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rank: { type: integer }
+                        score: { type: number }
+                        reviewCount: { type: integer }
+                        event:
+                          type: object
+                          properties:
+                            id: { type: string, format: uuid }
+                            title: { type: string }
+                            type: { $ref: '#/components/schemas/EnumType' }
+                            startDate: { type: string, format: date-time }
+                            endDate: { type: string, format: date-time }
+                            imageUrl: { type: string, nullable: true }
+                            city:
+                              type: object
+                              properties:
+                                id: { type: string, format: uuid }
+                                name: { type: string }
+                                region: { type: string }
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /ranking/regions:
+    get:
+      tags: [Ranking]
+      summary: Classement des régions par score
+      description: >
+        Classement des régions (score = moyenne des scores des villes notées
+        de la région). La photo de chaque région est récupérée depuis l'API
+        REST de Wikipédia en français (avec cache mémoire).
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Numéro de page (défaut 1)
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          required: false
+          description: Nombre d'éléments par page (défaut 20, max 100)
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Classement des régions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  page: { type: integer }
+                  limit: { type: integer }
+                  total: { type: integer }
+                  totalPages: { type: integer }
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rank: { type: integer }
+                        region: { type: string }
+                        score: { type: number }
+                        eventCount: { type: integer }
+                        cityCount: { type: integer }
+                        imageUrl: { type: string, nullable: true }
         '500':
           $ref: '#/components/responses/ServerError'

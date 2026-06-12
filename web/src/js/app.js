@@ -50,6 +50,9 @@ function initExplorePage() {
         $('#selectedStartDate').val('');
         $('#submitBooking').prop('disabled', true);
 
+        $('#selectedDayEventCount').text('-');
+        $('#selectedDayEventMessage').text('Sélectionnez une date dans le calendrier.');
+
         renderCalendar(recommendation);
     }
 
@@ -105,8 +108,11 @@ function initExplorePage() {
             dayButton.on('click', function () {
                 selectedStartDate = $(this).data('date');
 
-                $('#selectedStartDate').val(selectedStartDate); // hidden field on form
-                $('#submitBooking').prop('disabled', false); // activate the booking button
+                $('#selectedStartDate').val(selectedStartDate);
+                $('#submitBooking').prop('disabled', false);
+
+                const selectedDay = findDayForDate(recommendation, selectedStartDate);
+                updateSelectedDayEventInfo(selectedDay);
 
                 updateSelectedDuration();
             });
@@ -148,18 +154,10 @@ function initExplorePage() {
         }
     }
 
-    // if travelScoreByDay: [
-    // { date: "2026-07-01", score: 85 },
-    // { date: "2026-07-02", score: 70 }]
+    
     // return the associated score
     function findScoreForDate(recommendation, dateString) {
-        if (!recommendation.travelScoreByDay) {
-            return null;
-        }
-
-        const day = recommendation.travelScoreByDay.find(function (item) {
-            return item.date === dateString;
-        });
+        const day = findDayForDate(recommendation, dateString);
 
         if (!day) {
             return null;
@@ -204,5 +202,52 @@ function initExplorePage() {
         const day = String(date.getDate()).padStart(2, '0');
 
         return year + '-' + month + '-' + day;
+    }
+
+    function findDayForDate(recommendation, dateString) {
+        if (!recommendation.travelScoreByDay) {
+            return null;
+        }
+
+        const day = recommendation.travelScoreByDay.find(function (item) {
+            return item.date === dateString;
+        });
+
+        return day || null;
+    }
+
+    function updateSelectedDayEventInfo(day) {
+        if (!day) {
+            $('#selectedDayEventCount').text('-');
+            $('#selectedDayEventMessage').text('Aucune donnée disponible pour cette date.');
+            return;
+        }
+
+        const eventCount = day.eventCount ?? 0;
+
+        $('#selectedDayEventCount').text(eventCount);
+
+        let message = '';
+
+        if (eventCount === 0) {
+            message = 'Aucun événement prévu sur cette journée.';
+        } else if (eventCount === 1) {
+            message = '1 événement est prévu sur cette journée.';
+        } else {
+            message = eventCount + ' événements sont prévus sur cette journée.';
+        }
+
+
+        $('#selectedDayEventMessage').text(message);
+    }
+
+    function formatFrenchDate(dateString) {
+        const parts = dateString.split('-');
+
+        if (parts.length !== 3) {
+            return dateString;
+        }
+
+        return parts[2] + '/' + parts[1] + '/' + parts[0];
     }
 }

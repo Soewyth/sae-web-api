@@ -1,6 +1,8 @@
 <?php
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/class/ApiClient.class.php';
@@ -42,6 +44,9 @@ function isAdmin(): bool
 function requireLogin(): void
 {
     if (!isUserLoggedIn()){
+        $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+        $_SESSION['flash_error'] = 'Vous devez être connecté pour accéder à cette page.';
+
         header('Location: ' . url('pages/login.php'));
         exit;
     }

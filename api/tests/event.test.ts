@@ -15,17 +15,12 @@ jest.mock('../src/client', () => ({
       update: jest.fn(),
       delete: jest.fn(),
     },
-    userReview: {
-      findMany: jest.fn(),
-    },
   },
 }));
 
 import { prisma } from '../src/client';
 import {
   getEvents,
-  getEventById,
-  getReviewsByEvent,
   postEvent,
   putEvent,
   deleteEvent,
@@ -38,7 +33,6 @@ const mockEventFindUnique = prisma.event.findUnique as jest.Mock;
 const mockEventCreate = prisma.event.create as jest.Mock;
 const mockEventUpdate = prisma.event.update as jest.Mock;
 const mockEventDelete = prisma.event.delete as jest.Mock;
-const mockReviewFindMany = prisma.userReview.findMany as jest.Mock;
 
 // Helpers
 const makeReq = (overrides: Partial<Request> = {}): Request =>
@@ -80,14 +74,6 @@ const sampleEvent = {
 
 const sampleCity = { id: 'city-1', name: 'Paris' };
 
-const sampleReview = {
-  id: 'review-1',
-  rating: 5,
-  comment: 'Super!',
-  FK_EventId: 'event-1',
-  FK_userId: 'user-1',
-};
-
 const eventBody = {
   type: 'FESTIVAL',
   startDate: '2025-07-01',
@@ -123,111 +109,6 @@ describe('Event Controller - getEvents', () => {
     const res = makeRes();
 
     await getEvents(req, res);
-
-    expect((res as any).status).toHaveBeenCalledWith(500);
-  });
-});
-
-describe('Event Controller - getEventById', () => {
-  it('devrait retourner 400 si id non fourni (typeof check)', async () => {
-    const req = makeReq({ params: {} });
-    const res = makeRes();
-
-    await getEventById(req, res);
-
-    expect((res as any).status).toHaveBeenCalledWith(400);
-  });
-
-  it('devrait retourner 200 avec l\'événement trouvé', async () => {
-    mockEventFindUnique.mockResolvedValue(sampleEvent);
-    const req = makeReq({ params: { id: 'event-1' } });
-    const res = makeRes();
-
-    await getEventById(req, res);
-
-    expect((res as any).status).toHaveBeenCalledWith(200);
-    expect((res as any).json).toHaveBeenCalledWith({
-      message: 'Événement récupéré avec succès.',
-      result: sampleEvent,
-    });
-  });
-
-  it('devrait retourner 404 si événement non trouvé', async () => {
-    mockEventFindUnique.mockResolvedValue(null);
-    const req = makeReq({ params: { id: 'unknown' } });
-    const res = makeRes();
-
-    await getEventById(req, res);
-
-    expect((res as any).status).toHaveBeenCalledWith(404);
-  });
-
-  it('devrait retourner 500 sur erreur serveur', async () => {
-    mockEventFindUnique.mockRejectedValue(new Error('DB error'));
-    const req = makeReq({ params: { id: 'event-1' } });
-    const res = makeRes();
-
-    await getEventById(req, res);
-
-    expect((res as any).status).toHaveBeenCalledWith(500);
-  });
-});
-
-describe('Event Controller - getReviewsByEvent', () => {
-  it('devrait retourner 400 si id non fourni (typeof check)', async () => {
-    const req = makeReq({ params: {} });
-    const res = makeRes();
-
-    await getReviewsByEvent(req, res);
-
-    expect((res as any).status).toHaveBeenCalledWith(400);
-  });
-
-  it('devrait retourner 200 avec les reviews de l\'événement', async () => {
-    mockEventFindUnique.mockResolvedValue(sampleEvent);
-    mockReviewFindMany.mockResolvedValue([sampleReview]);
-    const req = makeReq({ params: { id: 'event-1' } });
-    const res = makeRes();
-
-    await getReviewsByEvent(req, res);
-
-    expect((res as any).status).toHaveBeenCalledWith(200);
-    expect((res as any).json).toHaveBeenCalledWith({
-      message: `Reviews de l'événement "${sampleEvent.title}" récupérés avec succès.`,
-      result: [sampleReview],
-    });
-  });
-
-  it('devrait retourner 200 avec liste vide si aucune review', async () => {
-    mockEventFindUnique.mockResolvedValue(sampleEvent);
-    mockReviewFindMany.mockResolvedValue([]);
-    const req = makeReq({ params: { id: 'event-1' } });
-    const res = makeRes();
-
-    await getReviewsByEvent(req, res);
-
-    expect((res as any).status).toHaveBeenCalledWith(200);
-    expect((res as any).json).toHaveBeenCalledWith(
-      expect.objectContaining({ result: [] }),
-    );
-  });
-
-  it('devrait retourner 404 si événement non trouvé', async () => {
-    mockEventFindUnique.mockResolvedValue(null);
-    const req = makeReq({ params: { id: 'unknown' } });
-    const res = makeRes();
-
-    await getReviewsByEvent(req, res);
-
-    expect((res as any).status).toHaveBeenCalledWith(404);
-  });
-
-  it('devrait retourner 500 sur erreur serveur', async () => {
-    mockEventFindUnique.mockRejectedValue(new Error('DB error'));
-    const req = makeReq({ params: { id: 'event-1' } });
-    const res = makeRes();
-
-    await getReviewsByEvent(req, res);
 
     expect((res as any).status).toHaveBeenCalledWith(500);
   });
@@ -379,31 +260,6 @@ describe('Event Router', () => {
     mockEventFindMany.mockResolvedValue([sampleEvent]);
 
     const res = await request(app).get('/event/');
-
-    expect(res.status).toBe(200);
-  });
-
-  it('GET /:id devrait retourner 200 si événement trouvé', async () => {
-    mockEventFindUnique.mockResolvedValue(sampleEvent);
-
-    const res = await request(app).get('/event/event-1');
-
-    expect(res.status).toBe(200);
-  });
-
-  it('GET /:id devrait retourner 404 si non trouvé', async () => {
-    mockEventFindUnique.mockResolvedValue(null);
-
-    const res = await request(app).get('/event/unknown');
-
-    expect(res.status).toBe(404);
-  });
-
-  it('GET /:id/reviews devrait retourner 200', async () => {
-    mockEventFindUnique.mockResolvedValue(sampleEvent);
-    mockReviewFindMany.mockResolvedValue([sampleReview]);
-
-    const res = await request(app).get('/event/event-1/reviews');
 
     expect(res.status).toBe(200);
   });

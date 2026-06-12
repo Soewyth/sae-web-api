@@ -18,7 +18,11 @@ export const getEventTypes = (_req: Request, res: Response) => {
  */
 export const getEvents = async (_req: Request, res: Response) => {
   try {
-    const events = await prisma.event.findMany();
+    const events = await prisma.event.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
     res.status(200).json({
       message: 'Liste des événements récupérée avec succès.',
       result: events,
@@ -27,93 +31,6 @@ export const getEvents = async (_req: Request, res: Response) => {
     res.status(500).json({
       message:
         'Une erreur est survenue lors de la récupération des événements.',
-      error: error,
-    });
-  }
-};
-
-/**
- * Récupérer un événement en particulier par son id
- */
-export const getEventById = async (req: Request, res: Response) => {
-  // On récupère l'id
-  const eventId = req.params.id;
-  if (typeof eventId !== 'string') {
-    res.status(400).json({ error: "Identifiant d'événement invalide." });
-    return;
-  }
-  try {
-    //On regarde si l'événement existe
-    const event = await prisma.event.findUnique({
-      where: {
-        id: eventId,
-      },
-    });
-    if (!event) {
-      res.status(404).json({
-        error: `Événement avec l'id "${eventId}" non trouvée.`,
-      });
-      return;
-    } else {
-      res.status(200).json({
-        message: 'Événement récupéré avec succès.',
-        result: event,
-      });
-    }
-  } catch (error) {
-    res.status(500).json({
-      message:
-        "Une erreur est survenue lors de la récupération de l'événement.",
-      error: error,
-    });
-  }
-};
-
-/**
- * Récupérer les reviews d'un événement
- */
-export const getReviewsByEvent = async (req: Request, res: Response) => {
-  // on récupère l'id de l'événement
-  const eventId = req.params.id;
-  if (typeof eventId !== 'string') {
-    res.status(400).json({ error: "Identifiant d'événement invalide." });
-    return;
-  }
-  try {
-    //On regarde si l'événement existe
-    const event = await prisma.event.findUnique({
-      where: {
-        id: eventId,
-      },
-    });
-    if (!event) {
-      res.status(404).json({
-        error: `Événement avec l'id "${eventId}" non trouvée.`,
-      });
-      return;
-    } else {
-      // On récupère les reviews de l'événement
-      const reviews = await prisma.userReview.findMany({
-        where: {
-          FK_EventId: eventId,
-        },
-      });
-      if (!reviews) {
-        res.status(404).json({
-          error: `Reviews non trouvés pour l'événement "${event.title}".`,
-        });
-        return;
-      } else {
-        res.status(200).json({
-          message: `Reviews de l'événement "${event.title}" récupérés avec succès.`,
-          result: reviews,
-        });
-      }
-    }
-  } catch (error) {
-    res.status(500).json({
-      message:
-        "Une erreur est survenue lors de la récupération des reviews d'un événement.",
       error: error,
     });
   }
@@ -142,7 +59,8 @@ export const postEvent = async (req: Request, res: Response) => {
       !type ||
       !startDate ||
       !endDate ||
-      !isOutdoor ||
+      isOutdoor === undefined ||
+      isOutdoor === null ||
       !nbGuests ||
       !title ||
       !FK_cityId

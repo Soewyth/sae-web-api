@@ -7,6 +7,7 @@ $bodyClass = $bodyClass ?? '';
 
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
 
@@ -25,6 +26,11 @@ $bodyClass = $bodyClass ?? '';
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <!-- CSS personnalisé -->
     <link rel="stylesheet" href="<?= url('css/style.css') ?>">
 </head>
+
+<body class="<?= htmlspecialchars($bodyClass) ?>">

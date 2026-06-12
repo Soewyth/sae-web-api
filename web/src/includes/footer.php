@@ -15,10 +15,9 @@
     </div>
 
     <div class="footer-links">
-        <a href="#">A Propos</a>
-        <a href="#">Politique de confidentialité</a>
-        <a href="#">Conditions d'utilisation</a>
-        <a href="#">Contact</a>
+        <a href="<?= url('pages/about.php') ?>">A Propos</a>
+        <a href="<?= url('pages/privacy.php') ?>">Politique de confidentialité</a>
+        <a href="<?= url('pages/terms.php') ?>">Conditions d'utilisation</a>
     </div>
 </footer>
 

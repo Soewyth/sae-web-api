@@ -1,164 +1,40 @@
-# SAÉ BUT Informatique 2 – Projet Web & API Dockerisé
+# EventSpot — Plateforme de recommandation d'événements touristiques
 
-Ce dépôt constitue la **base de travail** dans le cadre de la SAÉ de 2ᵉ année BUT Informatique (développement web & API).
+> SAÉ BUT2 Informatique · IUT de Calais · Juin 2026  
+> Groupe : Dhesdin Valentin · Gobfert Frédéric · Molinaro Antoine · Regnault Alex · Vanbaelinghem-Dezitter Willem
 
-Les étudiants travailleront **en groupe de 3 à 5**, via **GitHub**, et devront compléter / étendre ce socle technique.
-
----
-
-## 📘 Sujet de la SAÉ
-
-### 🎯 Contexte général
-
-Vous êtes une **équipe de développement** chargée de concevoir une application web permettant :
-
-* de **collecter et stocker des données réelles existantes**
-* de **gérer de nouveaux événements** liés à ces données
-* de **produire des indicateurs ou prédictions simples** sur les résultats possibles
-
-L’application reposera sur :
-
-* une **API REST**
-* une **base de données relationnelle**
-* une **interface web PHP**
+Plateforme web permettant de recommander les meilleures villes françaises pour organiser un événement, en croisant données météo historiques, disponibilité des lieux et concurrence événementielle.
 
 ---
 
-### 🧩 Choix du thème (libre)
+## Prérequis
 
-Chaque groupe choisira un **domaine disposant d’un volume de données exploitable**, par exemple :
-
-* 🎮 Tournois de jeux vidéo (e-sport)
-* ⚽ Championnats sportifs (football, basket, F1, etc.)
-* 🎲 Jeux de hasard (loteries, dés, cartes – sans argent réel)
-* 🏆 Compétitions culturelles ou artistiques
-* 📊 Classements, saisons, séries d’événements
-
-Le thème doit permettre :
-
-* des **résultats passés** (historique)
-* des **événements à venir**
-* des **comparaisons ou probabilités**
+- [Docker](https://docs.docker.com/get-docker/) + Docker Compose v2
+- [Make](https://www.gnu.org/software/make/) (`sudo apt install make` sur Debian/Ubuntu)
+- Git
+- **Pour les tests PHP uniquement** : PHP 8.3 CLI + extensions xml + Composer
+  ```bash
+  sudo apt install php8.3-cli php8.3-xml composer
+  ```
 
 ---
 
-### 🔮 Notion de prédiction attendue
+## Installation
 
-Les prédictions peuvent être **simples et explicables**, par exemple :
+### 1. Cloner le dépôt
 
-* probabilité de victoire basée sur l’historique
-* moyenne, tendance, classement projeté
-* comparaison statistique entre entités
-
-❗ Aucun machine learning avancé n’est requis.
-
----
-
-## 🧱 Attendus techniques obligatoires
-
-### API (Node.js / TypeScript)
-
-* API REST structurée (Express)
-* Accès base de données via **Prisma**
-* Documentation **Swagger** complète
-* Gestion des erreurs et validations
-* Tests unitaires avec **Vitest**
-
-#### 🔬 Tests et qualité
-
-* Couverture de code **≥ 90 %** (statements, branches, functions)
-* Rapport de coverage fourni (`vitest --coverage`)
-* Tests automatisés reproductibles
-
----
-
-### Base de données
-
-* Modélisation relationnelle cohérente
-* Contraintes d’intégrité
-* Migrations Prisma versionnées
-
----
-
-### Application Web PHP
-
-* Consommation de l’API via HTTP
-* Affichage structuré des données
-* Interfaces de création / consultation
-* Gestion des erreurs API
-
----
-
-## 📦 Livrables attendus
-
-* Dépôt GitHub complet
-* README final enrichi :
-  * présentation du thème (découpes du code, structures des différentes parties, ...)
-  * schéma de données
-  * routes API
-  * logique de prédiction
-* Rapport de coverage Vitest
-* Jeu de données initial documenté
-
-Le site PHP devra : 
-* Présenter votre thématique
-* Présenter les membres de l'équipe (avec leurs rôles dans le projet et leurs réalisations)
-* Permettre la consultation des données
-* Permettre une inscription et une authentification qui donne accès à : 
-  * L'ajout de novuelles données
-  * La partie de prédiction
-
-L'identification est nécessaire depuis la partie PHP mais également depuis la partie API
-
----
-
-## 🎯 Objectifs pédagogiques
-
-* Concevoir et développer une **API REST** en Node.js / TypeScript
-* Manipuler une **base de données PostgreSQL** via un ORM (Prisma)
-* Consommer une API depuis une application web PHP
-* Travailler avec **Docker & Docker Compose**
-* Structurer un projet full‑stack professionnel
-* Travailler en équipe (Git, organisation, documentation)
-
----
-
-## 🧱 Architecture générale
-
-Le projet est composé de **3 services Docker**, chacun dans un sous‑répertoire dédié :
-
-```
-.
-├── api/            # API Node.js (TypeScript, Express, Prisma)
-├── db/             # Base de données PostgreSQL
-├── web/            # Serveur Apache + PHP
-├── deploy.sh       # Script d'auto déploiement avec redémarrage sur JrCanDev
-├── docker-compose.jrcandev.yml    # Version pour le déploiement sur JrCanDev
-├── docker-compose.yml             # Version par défaut, notamment pour le test en local
-├── .env
-└── README.md
+```bash
+git clone https://github.com/Soewyth/sae-web-api
+cd sae-web-api
 ```
 
-Chaque service est **indépendant**, mais communique via le réseau Docker.
+### 2. Créer le fichier d'environnement
 
----
+Créer le fichier `.env` à la racine du dossier `sae-web-api` avec le contenu suivant :
 
-## 🐳 Docker Compose (racine)
-
-### `docker-compose.yml`
-cf. ./docker-compose.yml
-
-### `docker-compose.jrcandev.yml` (utilisé pour le déploiement sur JrCanDev)
-cf. ./docker-compose.jrcandev.yml
-
----
-
-## 🔐 Variables d'environnement
-
-### `.env` (unique, à la racine — gitignoré, à créer à la main après le clone)
-```
+```env
 # Docker Compose
-NAME=sae-web-but2-votrenomcompletici
+NAME=sae-web-but2-eventspot
 
 # PostgreSQL
 POSTGRES_USER=sae_user
@@ -169,145 +45,204 @@ POSTGRES_PORT=5432
 
 # API
 API_PORT=3070
-# localhost = accès depuis l'hôte (prisma, tests). Dans le conteneur api,
-# docker-compose surcharge DATABASE_URL avec l'hôte "db".
 DATABASE_URL=postgresql://sae_user:sae_password@localhost:5432/sae_db
-JWT_SECRET=<demander à l'équipe>
+JWT_SECRET=sae_but2_tourisme_2026_super_secret_key_tres_longue
 JWT_EXPIRES_IN='2h'
-DATATOURISME_API_KEY=<demander à l'équipe>
+DATATOURISME_API_KEY=27092812-3064-4c22-93aa-227bb8a81ec9
 ```
 
-Une fois ce fichier en place, **une seule commande** construit, démarre, migre et seed tout le projet :
+> **Note :** La clé à été fourni volontairement pour éviter à la correction d'en regénérer une !
+
+### 3. Lancer la stack
+
+#### Si ce n'est pas la première fois, ou si vous avez besoin d'un environnement propre : `docker compose down -v --rmi local`
+
 ```bash
 make up
 ```
 
-Pour **contribuer** (les hooks git husky/eslint s'exécutent sur la machine, pas dans Docker), installez aussi les dépendances hôte :
+Cette commande fait tout automatiquement :
+
+1. Crée le réseau Docker si absent
+2. Build les images (API Node.js + frontend PHP)
+3. Démarre les conteneurs (PostgreSQL, API, Web)
+4. Attend que PostgreSQL soit prêt
+5. Applique les migrations Prisma
+6. Lance le seed si la base est vide (**attention : ~10-15 min** pour les données météo)
+7. Vérifie que l'API répond
+
+### 4. Vérifier que tout fonctionne
+
 ```bash
-make dev
-```
-(`make help` liste toutes les commandes disponibles : logs, test, db-reset, clean, ...)
-
----
-
-## 🗄️ Base de données (db)
-
-Aucun Dockerfile spécifique n’est requis ici. La base PostgreSQL est fournie via l’image officielle.
-
-Vous utiliserez **Prisma** côté API pour gérer le schéma et les migrations.
-
----
-
-## 🚀 API Node.js / TypeScript
-
-### `Dockerfile`
-cf. ./api/Dockerfile
-
-### `Dockerfile.jrcandev`
-cf. ./api/Dockerfile.jrcandev
-
-### `package.json`
-cf. ./api/package.json
-
-### `tsconfig.json`
-cf. ./api/tsconfig.json
-
-### `index.ts`
-cf. ./api/src/index.ts
-
----
-
-## 🌐 Serveur Web PHP
-
-### `Dockerfile`
-cf. ./web/Dockerfile
-
-### `index.php`
-cf. ./web/src/index.php
-
----
-
-## ▶️ Lancer le projet
-
-À la racine du projet, commencez par créer votre .env en le complétant correctement, et ensuite vérifiez qu'il est bien considéré par docker avec la commande : 
-```bash
-docker compose config
-```
-Vous devriez voir les informations de vos differents conteneurs, et notamment l'interpretation de votre NAME dans les différents ``container_name``. si vous voyez encore apparaitre ``${NAME}_postgres``, ``${NAME}_api``, et ``${NAME}_web``, alors votre ``.env`` n'est pas correct et doit être ajusté avant d'aller plus loin.
-
-A présent, le réseau web pour vos conteneurs dockers doit être présent sur votre machine. Si il ne l'est pas encore, vous pouvez le créer avec la commande : 
-```bash
-docker network create web
+make health
 ```
 
-Si tout est OK, vous pouvez construire et lancer votre projet en l'état pour vérifier que la base est opérationnelle avec la commande : 
+Doit retourner : `{"status":"ok","api":"up","database":"up"}`
+
+---
+
+## Accès
+
+| Service               | URL locale                       |
+| --------------------- | -------------------------------- |
+| Frontend PHP          | http://localhost:8080            |
+| API REST              | http://localhost:3070/api/health |
+| Documentation Swagger | http://localhost:3070/api-docs   |
+
+### Comptes de test (créés par le seed)
+
+| Rôle        | Email           | Mot de passe |
+| ----------- | --------------- | ------------ |
+| Admin       | admin@gmail.com | admin        |
+| Utilisateur | user@gmail.com  | user         |
+
+---
+
+## Commandes disponibles
+
 ```bash
-docker compose up --build
+make up        # Tout-en-un : build + démarrage + migrations + seed (si base vide)
+make down      # Arrêter les conteneurs (données conservées)
+make restart   # Redémarrer toute la stack (down + up)
+make dev       # Préparer un poste contributeur (husky + npm install + composer install)
+make logs      # Suivre les logs de l'API en temps réel
+make logs s=db # Suivre les logs d'un autre service (ex: db)
+make migrate   # Appliquer les migrations Prisma (idempotent)
+make seed      # Réinitialiser et reseed la base (EFFACE les données)
+make test      # Lancer les tests Jest (API) dans le conteneur
+make test:web  # Lancer les tests PHPUnit (web) en local
+make health    # Vérifier que l'API et la base répondent
+make ps        # État des conteneurs
+make clean     # Supprimer conteneurs + volumes (DONNÉES PERDUES)
 ```
 
-Accès aux services :
-### En version locale
-* 🌍 Application PHP : [http://localhost:8080](http://localhost:8080)
-* 🔌 API : [http://localhost:3070/api](http://localhost:3070/api)
-* ❤️ Healthcheck API : [http://localhost:3070/api/health](http://localhost:3070/api/health)
-* 🐘 PostgreSQL : localhost:5432
+---
 
-Lors du premier lancement du projet, vérifiez ces 2 éléments
-* http://localhost:8080/ --> Devrait afficher "SAÉ BUT2 – Application Web PHP"
-* http://localhost:3070/api/health --> Devrait afficher "{"status":"ok","api":"up","database":"up"}"
+## Structure du projet
 
-La partie déploiement sur un environnement jrcandev est détaillée un peu plus bas dans ce document, mais dans tous les cas, l'environnement local doit **TOUJOURS** être opérationnel (il pourra être utilisé pour l'évaluation de votre travail).
+```
+sae-web-api/
+├── api/
+│   ├── prisma/
+│   │   ├── schema.prisma           # Modèle de données (6 tables)
+│   │   ├── seed.ts                 # Seed DataTourisme + météo Open-Meteo
+│   │   └── migrations/             # Migrations versionnées
+│   ├── src/
+│   │   ├── auth/                   # JWT — login / register
+│   │   ├── city/                   # CRUD villes
+│   │   ├── event/                  # CRUD événements
+│   │   ├── review/                 # CRUD avis (rating 1-5)
+│   │   ├── log/                    # Journal d'activité (auto via triggers)
+│   │   ├── recommendation/         # Moteur de score Top 3 villes
+│   │   ├── user/                   # CRUD utilisateurs
+│   │   ├── common/jwt.middleware.ts
+│   │   ├── client.ts               # PrismaClient singleton
+│   │   └── index.ts                # Point d'entrée Express
+│   ├── tests/                      # Tests Jest (8 suites, 136 tests)
+│   ├── Dockerfile                  # Image de développement
+│   └── Dockerfile.jrcandev         # Image de production (multi-stage)
+├── web/
+│   ├── src/
+│   │   ├── pages/                  # Pages PHP (home, explore, login, dashboard…)
+│   │   ├── class/                  # ApiClient PHP
+│   │   ├── config/                 # Configuration
+│   │   ├── css/                    # Styles
+│   │   ├── js/                     # JavaScript (calendrier, interactions)
+│   │   ├── index.php
+│   │   └── main.inc.php
+│   ├── tests/                      # Tests PHPUnit (2 suites, 46 tests)
+│   ├── composer.json
+│   └── phpunit.xml
+├── docker-compose.yml              # Stack de développement local
+├── docker-compose.jrcandev.yml     # Stack de production (JrCanDev + Traefik)
+├── Makefile                        # Commandes simplifiées
+└── deploy.sh                       # Script CI/CD déclenché par webhook GitHub
+```
 
 ---
 
-## 📚 Travail attendu 
+## API REST — Routes principales
 
-Chaque groupe devra notamment :
-* Concevoir le **schéma de base de données**
-* Implémenter des **routes API REST documentées (Swagger)**
-* Ajouter des **tests unitaires** (Vitest)
-* Consommer l’API depuis le site PHP
-* Gérer les erreurs, les validations, la sécurité
-* Documenter son travail
+| Méthode | Endpoint               | Auth | Description                   |
+| ------- | ---------------------- | ---- | ----------------------------- |
+| POST    | `/auth/register`       | —    | Créer un compte               |
+| POST    | `/auth/login`          | —    | Connexion, retourne un JWT    |
+| GET     | `/city/`               | —    | Lister toutes les villes      |
+| GET     | `/city/:cityId/events` | —    | Événements d'une ville        |
+| GET     | `/event/`              | —    | Lister tous les événements    |
+| POST    | `/event/`              | JWT  | Créer un événement            |
+| GET     | `/review/`             | —    | Lister tous les avis          |
+| POST    | `/review/`             | JWT  | Créer un avis (rating 1-5)    |
+| GET     | `/logs/`               | JWT  | Journal d'activité            |
+| GET     | `/user/`               | JWT  | Lister les utilisateurs       |
+| GET     | `/recommendations`     | —    | **Top 3 villes recommandées** |
+| GET     | `/api/health`          | —    | Statut API + BDD              |
 
-## Note complémentaire !
-Assurez-vous que lorsque **quelqu'un d'autre que vous** télécharge votre dépôt final, il est complet, avec les données et est executable en l'état pour pouvoir vous évaluer ;-)
-
-## Déploiement JrCanDev 
-Le projet devra être déployé sur JrCanDev pour être accessible pour les enseignants chargés de l’évaluation de la SAE. 
-Vous solliciterez donc un environnement spécifique sur JrCanDev. Ce dernier sera en lien avec la branche ``jrcandev`` (que vous devrez donc **impérativement** avoir sur votre dépôt gitHub) par le biais d’un webhook.
-
-Un (**et 1 seul**) étudiant de chaque groupe fera la demande sur [le discord de JrCanDev](https://discord.gg/hmfnabKSUB) dans le salon ``#hébergement-projets`` , et si vous avez des demandes techniques particulières, vous passerez par le salon ``#demande-assistance`` sur ce même serveur.
-
-**IMPORTANT**
-Un certain nombre d'éléments devront être ajustés sur votre dépot gitHub pour que le process de CI/CD soit pleinement fonctionnel, et vous aurez besoin de valider les éléments avec les personnes de JrCanDev (qui ne sont pas à disposition H24) donc assurez-vous que cette mise en place soit opérationnel **au plus tôt** durant votre projet.
-
-Vous documenterez la procédure permettant de déployer votre projet à partir des sources (paramétrage du dépôt, étapes d’initialisation, quel déclencheur, dans quel contexte, …).
-
-### Sur votre version hébergée sur JrCanDev, vous devriez donc avoir 
-* 🌍 Application PHP : [https://nomDeVotreProjet.jrcan.dev/](https://nomDeVotreProjet.jrcan.dev)
-* 🔌 API : [https://nomDeVotreProjet.jrcan.dev/api](https://nomDeVotreProjet.jrcan.dev/api)
-* ❤️ Healthcheck API : [https://nomDeVotreProjet.jrcan.dev/api/health](https://nomDeVotreProjet.jrcan.dev/api/health)
-* 🐘 PostgreSQL : [https://nomDeVotreProjet.jrcan.dev:5432](https://nomDeVotreProjet.jrcan.dev:5432)
-
-Lors du premier déploiement de votre projet sur JrCanDev, vérifiez ces 2 éléments
-* https://nomDeVotreProjet.jrcan.dev/ --> Devrait afficher "SAÉ BUT2 – Application Web PHP"
-* https://nomDeVotreProjet.jrcan.dev/api/health --> Devrait afficher "{"status":"ok","api":"up","database":"up"}"
+Documentation complète : **http://localhost:3070/api-docs** (Swagger UI)
 
 ---
 
-## 🧠 Quelques conseils pédagogiques
-* Bien identifier votre sujet, les données dont vous aurez besoin
-* Vous assurer de pouvoir créer / récupérer un jeu de données suffisant pour vos prédictions
-* Réaliser votre schema pour Prisma (sans oublier la migration et le generate)
-* Ajouter vos données (idealement d'une manière propre via le seed ^_^ )
-* Tester l’API indépendamment (Postman, Swagger)
-* Versionner régulièrement (1 nouvelle fonctionnalité = 1 commit)
-* Tout cela bien évidemment en se répartissant clairement les rôles
+## Moteur de recommandation
 
-Bon courage et bon dev 🚀
+`GET /recommendations?month=6&duration=10&isOutdoor=true&nbGuests=500`
 
+| Paramètre   | Type       | Description            |
+| ----------- | ---------- | ---------------------- |
+| `month`     | 1–12       | Mois cible             |
+| `duration`  | ≥ 1        | Durée en jours         |
+| `isOutdoor` | true/false | Plein air ou intérieur |
+| `nbGuests`  | ≥ 1        | Nombre de participants |
+
+**Score outdoor** : `50% météo + 30% capacité + 20% concurrence événementielle`  
+**Score indoor** : `40% capacité + 60% concurrence événementielle`
+
+Les données météo sont pré-calculées en base (table `CityWeather`, 269 villes × 12 mois) pour garantir des résultats déterministes à chaque appel.
 
 ---
 
+## Tests
 
+### API (Jest — dans le conteneur Docker)
+
+```bash
+make test
+# ou directement :
+docker compose exec api npx jest tests/ --coverage
+```
+
+Couverture actuelle : **97,06% statements** — 8 suites, 136 tests.
+
+### Web PHP (PHPUnit — en local)
+
+> Prérequis : `sudo apt install php8.3-cli php8.3-xml composer`
+
+```bash
+# Installer PHPUnit une seule fois (comme npm install)
+cd web && composer install
+
+# Lancer les tests
+make test:web
+# ou directement :
+cd web && vendor/bin/phpunit tests/ --colors=always
+```
+
+**46 tests, 64 assertions** — `ApiClient` (appels HTTP mockés) + helpers de `main.inc.php`.
+
+---
+
+## Dépannage
+
+**La commande `make up` échoue sur `make env`**  
+→ Le fichier `api/.env` est absent. Créez-le avec les variables listées ci-dessus.
+
+**Le seed prend très longtemps**  
+→ Normal. Le seed météo fait ~3 228 appels HTTP vers Open-Meteo par batches de 10, avec 500ms de délai entre chaque batch. Comptez 10-15 minutes.
+
+**`make up` dit "Base déjà peuplée"**  
+→ Le seed est ignoré automatiquement si la base contient déjà des villes. Utilisez `make seed` pour forcer un reseed (EFFACE les données existantes).
+
+**Erreur `EACCES` sur `api/node_modules`**  
+→ `make up` crée le dossier avec les droits corrects automatiquement. Si le problème persiste : `sudo chown -R $USER:$USER api/node_modules`
+
+**L'API ne répond pas après `make up`**  
+→ Vérifiez les logs : `make logs`. Si l'erreur est liée à Prisma, relancez : `make migrate`
