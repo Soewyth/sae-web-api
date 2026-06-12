@@ -1,49 +1,77 @@
 <?php
 
-/**
- * Classe servant à créer un client PHP pour contacter l'API REST et de récupérer des données des donnes au format JSON
- * 
- * exemple: 
- * $api = new ApiClient(API_BASE_URL);
- * $data = $api->get('/city');
- * permet d'appeler http://api:3070/api/city
- */
 class ApiClient
 {
     private string $baseUrl;
 
     public function __construct(string $baseUrl)
     {
-        $this->baseUrl = rtrim($baseUrl, '/'); // enlever les / a la fin de lurl
+        $this->baseUrl = rtrim($baseUrl, '/');
     }
 
-    //requete HTTP avec une methode GET
-    public function get(string $endpoint): array
+    public function get(string $endpoint, array $queryParams = [], ?string $token = null): array
+    {
+        if (!empty($queryParams)) {
+            $endpoint .= '?' . http_build_query($queryParams);
+        }
+
+        return $this->request('GET', $endpoint, null, $token);
+    }
+
+    public function post(string $endpoint, array $data = [], ?string $token = null): array
+    {
+        return $this->request('POST', $endpoint, $data, $token);
+    }
+
+    public function put(string $endpoint, array $data = [], ?string $token = null): array
+    {
+        return $this->request('PUT', $endpoint, $data, $token);
+    }
+
+    public function delete(string $endpoint, ?string $token = null): array
+    {
+        return $this->request('DELETE', $endpoint, null, $token);
+    }
+
+    private function request(string $method, string $endpoint, ?array $data = null, ?string $token = null): array
     {
         $url = $this->baseUrl . '/' . ltrim($endpoint, '/');
 
+        $headers = [
+            'Accept: application/json',
+            'Content-Type: application/json'
+        ];
+
+        if ($token !== null) {
+            $headers[] = 'Authorization: Bearer ' . $token;
+        }
+
         $options = [
             'http' => [
-                'method' => 'GET',
-                'header' => "Accept: application/json\r\n",
-                'timeout' => 5
+                'method' => $method,
+                'header' => implode("\r\n", $headers) . "\r\n",
+                'ignore_errors' => true,
+                'timeout' => 10,
             ]
         ];
 
-        $context = stream_context_create($options);
+        if ($data !== null) {
+            $options['http']['content'] = json_encode($data);
+        }
 
+        $context = stream_context_create($options);
         $response = @file_get_contents($url, false, $context);
 
         if ($response === false) {
             throw new Exception("Impossible de contacter l'API : " . $url);
         }
 
-        $data = json_decode($response, true); // transforme en tableau php
+        $decoded = json_decode($response, true);
 
-        if ($data === null) {
+        if ($decoded === null) {
             throw new Exception("La réponse de l'API n'est pas un JSON valide.");
         }
 
-        return $data;
+        return $decoded;
     }
 }

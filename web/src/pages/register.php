@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $success =
       'Compte créé avec succès. Vous pouvez maintenant vous connecter.';
   } else {
-    $error = $data['message'] ?? 'Erreur lors de la création du compte.';
+    $error = $data['message'] ?? $data['error'] ?? 'Erreur lors de la création du compte.';
   }
 }
 

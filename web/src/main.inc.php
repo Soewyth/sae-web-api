@@ -6,21 +6,30 @@ require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/class/ApiClient.class.php';
 
 /**
- * Permet de savoir si l'utilisateur est connecté.
- * générique pour l'instant.
- * TODO coorriger avec token reçu par l'API.
+ * To know if user is connected
  */
 function isUserLoggedIn(): bool
 {
-    return isset($_SESSION['user']);
+    return isset($_SESSION['token'], $_SESSION['user']);
 }
 
 /**
- * Permet de simplifier les liens   
+ * To facilitate writing links
  */
 function url(string $path): string
 {
     return BASE_URL . '/' . ltrim($path, '/');
+}
+
+function getUser(): ?array
+{
+    return $_SESSION['user'] ?? null;
+}
+
+
+function getToken(): ?string
+{
+    return $_SESSION['token'] ?? null;
 }
 
 

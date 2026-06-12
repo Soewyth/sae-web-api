@@ -1,27 +1,7 @@
 <?php
-http: //localhost:8080/pages/explore.php?event_name=festival+de+bbq&
-// event_type=Festival&
-// event_place=outdoor&event_region=Nord-Pas-De-Calais&
-// event_month=4&
-// event_participants=3000&
-// event_description=De+la+Barbaque+%C3%A0+foison&event_start_research=event_start_research
-
-// url
-// http://localhost:8080/index.php?
-// event_name=festival+de+bbq&
-// event_type=&
-// event_place=on
-// &event_region=Nord-Pas-De-Calais
-// &event_month=6&
-// event_participants=3000&
-// event_description=&
-// event_start_research=event_start_research
-
-//http://localhost:8080/pages/explore.php?event_name=festival+de+bbq&event_type=Festival&event_place=outdoor&event_region=Nord-Pas-De-Calais&event_month=7&event_duration=10&event_participants=3000&event_description=fhjnidoksplq%5Efvhcdijkxplsq&event_start_research=event_start_research
-
 require_once __DIR__ . '/../main.inc.php';
 
-$pageTitle = 'Explore';
+$pageTitle = 'Evenements';
 $activePage = 'explore';
 
 $recommendations = [];
@@ -30,155 +10,93 @@ $errorMessage = null;
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/navbar.php';
 
+// recovering data on GET
 $eventName = $_GET['event_name'] ?? '';
 $eventType = $_GET['event_type'] ?? '';
 $setting = $_GET['event_place'] ?? '';
-$audience = $_GET['audience'] ?? '';
+$participants = max(1, (int) ($_GET['event_participants'] ?? 1));
 $region = $_GET['event_region'] ?? '';
 
 $monthNumber = (int) ($_GET['event_month'] ?? date('n'));
 $monthNumber = max(1, min(12, $monthNumber));
 
+$monthNames = [
+    1 => 'Janvier',
+    2 => 'Février',
+    3 => 'Mars',
+    4 => 'Avril',
+    5 => 'Mai',
+    6 => 'Juin',
+    7 => 'Juillet',
+    8 => 'Août',
+    9 => 'Septembre',
+    10 => 'Octobre',
+    11 => 'Novembre',
+    12 => 'Décembre',
+];
+
+$monthLabel = $monthNames[$monthNumber];
+
+$isOutdoor = ($setting === 'outdoor');
+
 $year = (int) date('Y');
 $month = sprintf('%04d-%02d', $year, $monthNumber);
-
+$description = $_GET['event_description'] ?? '';
 $duration = max(1, (int) ($_GET['event_duration'] ?? 1));
 
-function generateFakeDailyScores(string $month, int $baseScore): array
-{
-  $days = [];
-
-  $firstDay = new DateTime($month . '-01');
-  $numberOfDays = (int) $firstDay->format('t');
-
-  for ($day = 1; $day <= $numberOfDays; $day++) {
-    $currentDate = new DateTime(
-      $month . '-' . str_pad($day, 2, '0', STR_PAD_LEFT),
-    );
-
-    $score = $baseScore + rand(-15, 15);
-    $score = max(0, min(100, $score));
-
-    $days[] = [
-      'date' => $currentDate->format('Y-m-d'),
-      'score' => $score,
-    ];
-  }
-
-  return $days;
-}
 
 try {
-  // $api = new ApiClient(API_BASE_URL);
+  $api = new ApiClient(API_BASE_URL);
 
-  // $recommendations = $api->get('/city/recommendations');
+  $apiResponse = $api->get('/recommendations', 
+  [
+    'month' => $monthNumber, 
+    'duration' => $duration, 
+    'isOutdoor' => $isOutdoor ? 'true' : 'false',
+    'nbGuests' => $participants
+  ]);
 
-  // en attendant davoir les routes
-  $recommendations = [
-    [
-      'id' => '1',
-      'name' => 'Paris',
-      'region' => 'Île-de-France',
-      'month' => 'May',
-      'image_url' =>
-        'https://images.unsplash.com/photo-1502602898657-3e91760cbb34',
-      'averageTemp' => 20,
-      'precipitation' => 65,
-      'sunHours' => 7,
-      'poisCount' => 124,
-      'matchScore' => 92,
-      'keyAttractions' => [
-        ['name' => 'Eiffel Tower', 'tag' => 'Must See'],
-        ['name' => 'Louvre Museum', 'tag' => 'Art'],
-        ['name' => 'Notre-Dame', 'tag' => 'History'],
-      ],
-      'travelScoreByMonth' => [
-        'Jan' => 45,
-        'Feb' => 48,
-        'Mar' => 62,
-        'Apr' => 75,
-        'May' => 92,
-        'Jun' => 88,
-        'Jul' => 80,
-        'Aug' => 72,
-        'Sep' => 85,
-        'Oct' => 65,
-        'Nov' => 50,
-        'Dec' => 42,
-      ],
-      'travelScoreByDay' => generateFakeDailyScores($month, 92),
-    ],
-    [
-      'id' => '2',
-      'name' => 'London',
-      'region' => 'Greater London',
-      'month' => 'Jun',
-      'image_url' =>
-        'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad',
-      'averageTemp' => 18,
-      'precipitation' => 72,
-      'sunHours' => 6,
-      'poisCount' => 98,
-      'matchScore' => 85,
-      'keyAttractions' => [
-        ['name' => 'Big Ben', 'tag' => 'Must See'],
-        ['name' => 'British Museum', 'tag' => 'Museum'],
-        ['name' => 'Tower Bridge', 'tag' => 'History'],
-      ],
-      'travelScoreByMonth' => [
-        'Jan' => 40,
-        'Feb' => 44,
-        'Mar' => 55,
-        'Apr' => 68,
-        'May' => 78,
-        'Jun' => 85,
-        'Jul' => 82,
-        'Aug' => 76,
-        'Sep' => 70,
-        'Oct' => 58,
-        'Nov' => 47,
-        'Dec' => 39,
-      ],
-      'travelScoreByDay' => generateFakeDailyScores($month, 85),
-    ],
-    [
-      'id' => '3',
-      'name' => 'Rome',
-      'region' => 'Lazio',
-      'month' => 'Sep',
-      'image_url' =>
-        'https://images.unsplash.com/photo-1552832230-c0197dd311b5',
-      'averageTemp' => 24,
-      'precipitation' => 45,
-      'sunHours' => 8,
-      'poisCount' => 156,
-      'matchScore' => 78,
-      'keyAttractions' => [
-        ['name' => 'Colosseum', 'tag' => 'History'],
-        ['name' => 'Trevi Fountain', 'tag' => 'Must See'],
-        ['name' => 'Vatican Museum', 'tag' => 'Art'],
-      ],
-      'travelScoreByMonth' => [
-        'Jan' => 52,
-        'Feb' => 56,
-        'Mar' => 66,
-        'Apr' => 72,
-        'May' => 76,
-        'Jun' => 80,
-        'Jul' => 70,
-        'Aug' => 68,
-        'Sep' => 78,
-        'Oct' => 74,
-        'Nov' => 60,
-        'Dec' => 55,
-      ],
-      'travelScoreByDay' => generateFakeDailyScores($month, 50),
-    ],
-  ];
+    if (!isset($apiResponse['result']) || !is_array($apiResponse['result'])) {
+        $errorMessage = $apiResponse['message']
+            ?? $apiResponse['error']
+            ?? "Impossible de récupérer les recommandations pour le moment.";
 
-  $top1Recommendation = $recommendations[0] ?? null;
+        $top1Recommendation = null;
+    } else {
+        if (!empty($apiResponse['startDate'])) {
+            $month = substr($apiResponse['startDate'], 0, 7);
+        }
+
+        $recommendations = [];
+
+
+        // recovering datas response json
+        foreach (($apiResponse['result'] ?? []) as $item) {
+                $city = $item['city'];
+                $monthlyAverage = $item['monthlyAverage'] ?? [];
+
+                $recommendations[] = [
+                    'id' => $city['id'],
+                    'name' => $city['name'],
+                    'region' => $city['region'] ?? '',
+                    'month' => $monthLabel,
+                    'image_url' => $city['imageUrl'] ?? '',
+                    'averageTemp' => $monthlyAverage['avgTemp'] ?? null,
+                    'precipitation' => $monthlyAverage['avgPrecip'] ?? null,
+                    'sunHours' => $monthlyAverage['avgSun'] ?? null,
+                    'poisCount' => $item['avgMaxCapacity'] ?? 0,
+                    'matchScore' => $item['score'] ?? 0,
+                    'travelScoreByDay' => $item['days'] ?? [],
+                ];
+            }
+
+
+            $top1Recommendation = $recommendations[0] ?? null;
+    }
+
 } catch (Exception $e) {
   $errorMessage = $e->getMessage();
+  $top1Recommendation = null;
 }
 ?>
 
@@ -186,14 +104,22 @@ try {
 
     <?php if ($errorMessage !== null): ?>
         <div class="alert alert-danger">
-            <?= htmlspecialchars($errorMessage) ?>
+            <h2 style="font-size: 1.1rem;">Impossible de charger les recommandations</h2>
+            <p class="mb-0">
+                <?= htmlspecialchars($errorMessage) ?>
+            </p>
+            <p class="mb-0 mt-2">
+                Vérifiez que l’API et la base de données PostgreSQL sont bien démarrées.
+            </p>
         </div>
     <?php endif; ?>
 
     <?php if ($top1Recommendation === null): ?>
-        <div class="alert alert-warning">
-            Aucune recommandation disponible pour cette recherche.
-        </div>
+        <?php if ($errorMessage === null): ?>
+            <div class="alert alert-warning">
+                Aucune recommandation disponible pour cette recherche.
+            </div>
+        <?php endif; ?>
     <?php else: ?>
 
         <section class="explore-layout">
@@ -263,11 +189,11 @@ try {
 
             <!--Volet droit-->
             <section class="explore-details">
-                <p>Image Paris</p>
+
                 <section
                     class="recommandations-top1"
                     id="topRecommendationImage"
-                    style="background-image: linear-gradient(rgba(7, 19, 46, 0.2), rgba(7, 19, 46, 0.75)), url('<?= htmlspecialchars(
+                    style="margin-top: 15px; background-image: linear-gradient(rgba(7, 19, 46, 0.2), rgba(7, 19, 46, 0.75)), url('<?= htmlspecialchars(
                       $top1Recommendation['image_url'],
                     ) ?>');"
                 >
@@ -379,8 +305,8 @@ try {
                     <input type="hidden" name="setting" value="<?= htmlspecialchars(
                       $setting,
                     ) ?>">
-                    <input type="hidden" name="audience" value="<?= htmlspecialchars(
-                      $audience,
+                    <input type="hidden" name="nbGuests" value="<?= htmlspecialchars(
+                      $participants,
                     ) ?>">
                     <input type="hidden" name="region" value="<?= htmlspecialchars(
                       $region,
@@ -396,6 +322,8 @@ try {
                       $top1Recommendation['id'],
                     ) ?>">
                     <input type="hidden" name="startDate" id="selectedStartDate">
+
+                    <input type="hidden" name="description" value="<?= htmlspecialchars($description) ?>">
 
                     <button type="submit" class="btn btn-app-secondary" id="submitBooking" disabled>
                         Bloquer cet événement

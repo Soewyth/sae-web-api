@@ -36,7 +36,7 @@ $activePage = $activePage ?? '';
                             class="nav-link <?= $activePage === 'home' ? 'active' : '' ?>" 
                             href="<?= url('index.php') ?>"
                         >
-                            Home
+                            Accueil
                         </a>
                     </li>
 
@@ -45,7 +45,7 @@ $activePage = $activePage ?? '';
                             class="nav-link <?= $activePage === 'explore' ? 'active' : '' ?>" 
                             href="<?= url('pages/explore.php') ?>"
                         >
-                            Explore
+                            Evènements
                         </a>
                     </li>
 
@@ -54,7 +54,7 @@ $activePage = $activePage ?? '';
                             class="nav-link <?= $activePage === 'dashboard' ? 'active' : '' ?>" 
                             href="<?= url('pages/dashboard.php') ?>"
                         >
-                            Dashboard
+                            Tableau de bord
                         </a>
                     </li>
 
@@ -79,13 +79,13 @@ $activePage = $activePage ?? '';
                         </a>
 
                         <a href="<?= url('pages/logout.php') ?>" class="btn btn-app-secondary btn-sm">
-                            Logout
+                            Se déconnecter
                         </a>
 
                     <?php else : ?>
 
                         <a href="<?= url('pages/login.php') ?>" class="btn btn-app-secondary btn-sm">
-                            Login
+                            Se connecter
                         </a>
 
                     <?php endif; ?>

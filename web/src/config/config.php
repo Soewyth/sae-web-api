@@ -5,4 +5,4 @@ define('APP_NAME', 'EventSpot');
 define('BASE_URL', '');
 
 // URL de l’API
-define('API_BASE_URL', getenv('API_BASE_URL') ?: 'http://api:3070/api');
+define('API_BASE_URL', getenv('API_BASE_URL') ?: 'http://api:3070');
