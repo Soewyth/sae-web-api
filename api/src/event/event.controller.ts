@@ -146,7 +146,8 @@ export const postEvent = async (req: Request, res: Response) => {
       !type ||
       !startDate ||
       !endDate ||
-      !isOutdoor ||
+      isOutdoor === undefined ||
+      isOutdoor === null ||
       !nbGuests ||
       !title ||
       !FK_cityId

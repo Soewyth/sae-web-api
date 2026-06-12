@@ -11,6 +11,8 @@ export async function getUsers(req: Request, res: Response) {
         id: true,
         email: true,
         username: true,
+        isAdmin: true,
+        createdAt: true,
       },
     });
 
@@ -29,7 +31,7 @@ export async function getUsers(req: Request, res: Response) {
 
 // Get user by ID
 export async function getUserById(req: Request, res: Response) {
-  const userId = req.params.userId;
+  const userId = req.params.id;
   if (typeof userId !== 'string') {
     res.status(400).json({ error: "Identifiant d'utilisateur invalide." });
     return;
@@ -104,7 +106,7 @@ export async function getEventsByUser(req: Request, res: Response) {
 
 // Update user by ID
 export async function updateUser(req: Request, res: Response) {
-  const userId = req.params.userId;
+  const userId = req.params.id;
   if (typeof userId !== 'string') {
     res.status(400).json({ error: "Identifiant d'utilisateur invalide." });
     return;
@@ -188,7 +190,7 @@ export async function updateUser(req: Request, res: Response) {
 
 // Delete user by ID
 export async function deleteUser(req: Request, res: Response) {
-  const userId = req.params.userId;
+  const userId = req.params.id;
   if (typeof userId !== 'string') {
     res.status(400).json({ error: "Identifiant d'utilisateur invalide." });
     return;

@@ -21,6 +21,17 @@ $activeSidebar = $activeSidebar ?? ''; ?>
             <i class="fas fa-star me-3"></i>
             <span class="hide-on-collapse">Avis</span>
         </a>
+
+        <?php if (isAdmin()): ?>
+            <a href="<?= url(
+              'pages/users.php',
+            ) ?>" class="sidebar-link <?= $activeSidebar === 'users'
+  ? 'active'
+  : '' ?> text-decoration-none p-3">
+                <i class="fas fa-users me-3"></i>
+                <span class="hide-on-collapse">Utilisateurs</span>
+            </a>
+        <?php endif; ?>
     </div>
 
     <div class="profile-section mt-auto p-4">

@@ -239,7 +239,9 @@ $colCount = isAdmin() ? 7 : 6;
 <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="editEventForm">
+            <form id="editEventForm" method="post" action="<?= url(
+                'pages/update_event.php',
+            ) ?>">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editEventModalLabel">
                         <i class="bi bi-pencil"></i> Modifier l'événement
@@ -249,16 +251,16 @@ $colCount = isAdmin() ? 7 : 6;
                 <div class="modal-body">
                     <div id="editEventError" class="alert alert-danger d-none" role="alert"></div>
 
-                    <input type="hidden" id="editEventId">
+                    <input type="hidden" id="editEventId" name="eventId">
 
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label for="editTitle" class="form-label">Titre</label>
-                            <input type="text" class="form-control" id="editTitle" maxlength="100" required>
+                            <input type="text" class="form-control" id="editTitle" name="title" maxlength="100" required>
                         </div>
                         <div class="col-md-4">
                             <label for="editType" class="form-label">Type</label>
-                            <select class="form-select" id="editType" required>
+                            <select class="form-select" id="editType" name="type" required>
                                 <?php foreach ($eventTypes as $type): ?>
                                     <option value="<?= htmlspecialchars(
                                                         $type,
@@ -269,16 +271,16 @@ $colCount = isAdmin() ? 7 : 6;
 
                         <div class="col-md-6">
                             <label for="editStartDate" class="form-label">Date de début</label>
-                            <input type="date" class="form-control" id="editStartDate" required>
+                            <input type="date" class="form-control" id="editStartDate" name="startDate" required>
                         </div>
                         <div class="col-md-6">
                             <label for="editEndDate" class="form-label">Date de fin</label>
-                            <input type="date" class="form-control" id="editEndDate" required>
+                            <input type="date" class="form-control" id="editEndDate" name="endDate" required>
                         </div>
 
                         <div class="col-md-6">
                             <label for="editCity" class="form-label">Ville</label>
-                            <select class="form-select" id="editCity" required>
+                        <select class="form-select" id="editCity" name="cityId" required>
                                 <?php foreach ($cities as $city): ?>
                                     <option value="<?= htmlspecialchars(
                                                         $city['id'],
@@ -288,18 +290,18 @@ $colCount = isAdmin() ? 7 : 6;
                         </div>
                         <div class="col-md-3">
                             <label for="editNbGuests" class="form-label">Participants</label>
-                            <input type="number" class="form-control" id="editNbGuests" min="1" required>
+                            <input type="number" class="form-control" id="editNbGuests" name="nbGuests" min="1" required>
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
                             <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="editIsOutdoor">
+                                <input class="form-check-input" type="checkbox" id="editIsOutdoor" name="isOutdoor">
                                 <label class="form-check-label" for="editIsOutdoor">Extérieur</label>
                             </div>
                         </div>
 
                         <div class="col-12">
                             <label for="editDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="editDescription" rows="3"></textarea>
+                            <textarea class="form-control" id="editDescription" name="description" rows="3"></textarea>
                         </div>
                     </div>
                 </div>
@@ -446,81 +448,38 @@ $colCount = isAdmin() ? 7 : 6;
         bootstrap.Modal.getOrCreateInstance(document.getElementById('editEventModal')).show();
     }
 
+    // La modification part en POST vers update_event.php (l'API n'est pas
+    // joignable depuis le navigateur) ; on valide juste les dates avant envoi.
     document.getElementById('editEventForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
         const errorBox = document.getElementById('editEventError');
         errorBox.classList.add('d-none');
 
-        const eventId = document.getElementById('editEventId').value;
         const startDate = document.getElementById('editStartDate').value;
         const endDate = document.getElementById('editEndDate').value;
 
         if (endDate < startDate) {
+            e.preventDefault();
             errorBox.textContent = 'La date de fin doit être postérieure ou égale à la date de début.';
             errorBox.classList.remove('d-none');
-            return;
         }
-
-        const payload = {
-            title: document.getElementById('editTitle').value.trim(),
-            type: document.getElementById('editType').value,
-            startDate: new Date(startDate).toISOString(),
-            endDate: new Date(endDate).toISOString(),
-            description: document.getElementById('editDescription').value.trim(),
-            isOutdoor: document.getElementById('editIsOutdoor').checked,
-            nbGuests: parseInt(document.getElementById('editNbGuests').value, 10),
-            FK_cityId: document.getElementById('editCity').value
-        };
-
-        const submitBtn = document.getElementById('editEventSubmitBtn');
-        submitBtn.disabled = true;
-
-        fetch('<?= API_BASE_URL ?>/event/' + eventId, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + '<?= getToken() ?? '' ?>'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.event) {
-                    location.reload();
-                } else {
-                    errorBox.textContent = data.message || data.error || 'Erreur lors de la modification.';
-                    errorBox.classList.remove('d-none');
-                    submitBtn.disabled = false;
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                errorBox.textContent = 'Erreur lors de la modification.';
-                errorBox.classList.remove('d-none');
-                submitBtn.disabled = false;
-            });
     });
 
     function deleteEvent(eventId) {
-        if (confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
-            fetch('<?= API_BASE_URL ?>/event/' + eventId, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer ' + '<?= getToken() ?? '' ?>'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message) {
-                        alert('Événement supprimé avec succès');
-                        location.reload();
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    alert('Erreur lors de la suppression');
-                });
+        if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
+            return;
         }
+
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = '<?= url('pages/delete_event.php') ?>';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'eventId';
+        input.value = eventId;
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
     }
 </script>
