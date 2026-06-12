@@ -84,7 +84,7 @@ $colCount = isAdmin() ? 7 : 6;
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1><?= $listTitle ?></h1>
                 <a href="<?= url(
-                                'pages/book_event.php',
+                                'index.php#event-research',
                             ) ?>" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Créer un événement
                 </a>
@@ -326,15 +326,15 @@ $colCount = isAdmin() ? 7 : 6;
     let currentPage = 1;
 
     function renderEventRow(event) {
-        const creatorCell = isAdminView
-            ? `<td>${escapeHtml(creatorNames[event.createdBy] ?? '—')}</td>`
-            : '';
-        const deleteBtn = isAdminView
-            ? `<a href="#" class="btn btn-sm btn-outline-danger"
+        const creatorCell = isAdminView ?
+            `<td>${escapeHtml(creatorNames[event.createdBy] ?? '—')}</td>` :
+            '';
+        const deleteBtn = isAdminView ?
+            `<a href="#" class="btn btn-sm btn-outline-danger"
                     onclick="deleteEvent('${event.id}'); return false;">
                     <i class="bi bi-trash"></i> Supprimer
-                </a>`
-            : '';
+                </a>` :
+            '';
         return `
             <tr>
                 <td><strong>${escapeHtml(event.title)}</strong></td>
