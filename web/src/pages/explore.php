@@ -220,52 +220,57 @@ try {
 
                 </section>
 
-                <section class="info-grid">
-                    <article class="info-card">
-                        <h3>
-                            <i class="bi bi-thermometer"></i>
-                            <span id="topMonth"><?= htmlspecialchars(
-                              $top1Recommendation['month'],
-                            ) ?></span> Moyennes
-                        </h3>
-
-                        <div class="weather-stats">
-                            <div>
-                                <strong>
-                                    <span id="topAverageTemp"><?= htmlspecialchars(
-                                      $top1Recommendation['averageTemp'],
-                                    ) ?></span>
-                                </strong>
-                                <span>Temp</span>
+                <?php if($isOutdoor){
+                    ?>
+                    <section class="info-grid">
+                        <article class="info-card">
+                            <h3>
+                                <i class="bi bi-thermometer"></i>
+                                <span id="topMonth"><?= htmlspecialchars(
+                                  $top1Recommendation['month'],
+                                ) ?></span> Moyennes
+                            </h3>
+    
+                            <div class="weather-stats">
+                                <div>
+                                    <strong>
+                                        <span id="topAverageTemp"><?= htmlspecialchars(
+                                          $top1Recommendation['averageTemp'],
+                                        ) ?></span>
+                                    </strong>
+                                    <span>Temp</span>
+                                </div>
+    
+                                <div>
+                                    <strong>
+                                        <span id="topPrecipitation"><?= htmlspecialchars(
+                                          $top1Recommendation['precipitation'],
+                                        ) ?></span>
+                                        <small>mm</small>
+                                    </strong>
+                                    <span>Prec</span>
+                                </div>
+    
+                                <div>
+                                    <strong >
+                                        <span id="topSunHours"><?= htmlspecialchars(
+                                          $top1Recommendation['sunHours'],
+                                        ) ?></span>
+                                        <small>h</small>
+                                    </strong>
+                                    <span>Soleil</span>
+                                </div>
+    
                             </div>
-
-                            <div>
-                                <strong>
-                                    <span id="topPrecipitation"><?= htmlspecialchars(
-                                      $top1Recommendation['precipitation'],
-                                    ) ?></span>
-                                    <small>mm</small>
-                                </strong>
-                                <span>Prec</span>
-                            </div>
-
-                            <div>
-                                <strong >
-                                    <span id="topSunHours"><?= htmlspecialchars(
-                                      $top1Recommendation['sunHours'],
-                                    ) ?></span>
-                                    <small>h</small>
-                                </strong>
-                                <span>Soleil</span>
-                            </div>
-
-                        </div>
-                    </article>
-
-                    <article class="info-card">
-                        <p>En construction</p>
-                    </article>
-                </section>
+                        </article>
+    
+                        <article class="info-card">
+                            <p>En construction</p>
+                        </article>
+                    </section>
+                <?php
+                }
+                ?>
 
                 <!-- Calendirer des dates -->
                 <section class="travel-score">
@@ -308,31 +313,15 @@ try {
                   'pages/book-event.php',
                 ) ?>" class="booking-form">
 
-                    <input type="hidden" name="eventName" value="<?= htmlspecialchars(
-                      $eventName,
-                    ) ?>">
-                    <input type="hidden" name="eventType" value="<?= htmlspecialchars(
-                      $eventType,
-                    ) ?>">
-                    <input type="hidden" name="setting" value="<?= htmlspecialchars(
-                      $setting,
-                    ) ?>">
-                    <input type="hidden" name="nbGuests" value="<?= htmlspecialchars(
-                      $participants,
-                    ) ?>">
-                    <input type="hidden" name="region" value="<?= htmlspecialchars(
-                      $region,
-                    ) ?>">
-                    <input type="hidden" name="month" value="<?= htmlspecialchars(
-                      $month,
-                    ) ?>">
-                    <input type="hidden" name="duration" value="<?= htmlspecialchars(
-                      $duration,
-                    ) ?>">
+                    <input type="hidden" name="eventName" value="<?= htmlspecialchars($eventName) ?>">
+                    <input type="hidden" name="eventType" value="<?= htmlspecialchars($eventType) ?>">
+                    <input type="hidden" name="setting" value="<?= htmlspecialchars($setting) ?>">
+                    <input type="hidden" name="nbGuests" value="<?= htmlspecialchars($participants) ?>">
+                    <input type="hidden" name="region" value="<?= htmlspecialchars($region) ?>">
+                    <input type="hidden" name="month" value="<?= htmlspecialchars($month) ?>">
+                    <input type="hidden" name="duration" value="<?= htmlspecialchars($duration) ?>">
 
-                    <input type="hidden" name="cityId" id="selectedCityId" value="<?= htmlspecialchars(
-                      $top1Recommendation['id'],
-                    ) ?>">
+                    <input type="hidden" name="cityId" id="selectedCityId" value="<?= htmlspecialchars($top1Recommendation['id']) ?>">
                     <input type="hidden" name="startDate" id="selectedStartDate">
 
                     <input type="hidden" name="description" value="<?= htmlspecialchars($description) ?>">
