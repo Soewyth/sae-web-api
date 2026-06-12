@@ -28,6 +28,7 @@ vendor/
 
 # Composer
 composer.lock
+composer.phar
 
 # Logs
 *.log
