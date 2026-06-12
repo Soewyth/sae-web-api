@@ -40,23 +40,23 @@ $activePage = $activePage ?? '';
                         </a>
                     </li>
 
-                    <li class="nav-item">
-                        <a 
-                            class="nav-link <?= $activePage === 'explore' ? 'active' : '' ?>" 
-                            href="<?= url('pages/explore.php') ?>"
-                        >
-                            Evènements
-                        </a>
-                    </li>
+                    <?php if (isUserLoggedIn() && hasExploreSearchParams()): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?= $activePage === 'explore' ? 'active' : '' ?>"
+                            href="<?= url('pages/explore.php?' . http_build_query($_GET)) ?>">
+                                Evènements
+                            </a>
+                        </li>
+                    <?php endif; ?>
 
-                    <li class="nav-item">
-                        <a 
-                            class="nav-link <?= $activePage === 'dashboard' ? 'active' : '' ?>" 
-                            href="<?= url('pages/dashboard.php') ?>"
-                        >
-                            Tableau de bord
-                        </a>
-                    </li>
+                    <?php if (isUserLoggedIn()): ?>
+                        <li class="nav-item">
+                            <a class="nav-link <?= $activePage === 'dashboard' ? 'active' : '' ?>"
+                            href="<?= url('pages/dashboard.php') ?>">
+                                Tableau de bord
+                            </a>
+                        </li>
+                    <?php endif; ?>
 
                     <?php if (isAdmin()) : ?>
                     <li class="nav-item">
@@ -73,10 +73,6 @@ $activePage = $activePage ?? '';
 
                 <div class="d-flex align-items-center gap-2">
                     <?php if (isUserLoggedIn()) : ?>
-
-                        <a href="<?= url('pages/profile.php') ?>" class="btn btn-outline-light btn-sm">
-                            Mon compte
-                        </a>
 
                         <a href="<?= url('pages/logout.php') ?>" class="btn btn-app-secondary btn-sm">
                             Se déconnecter
