@@ -789,8 +789,8 @@ a {
 }
 
 .main-content .container {
-  padding-left: 0;
-  padding-right: 0;
+  padding-left: 32px;
+  padding-right: 32px;
   max-width: 100%;
 }
 
