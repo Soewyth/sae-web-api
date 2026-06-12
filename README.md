@@ -109,6 +109,7 @@ make logs      # Suivre les logs de l'API en temps réel
 make logs s=db # Suivre les logs d'un autre service (ex: db)
 make migrate   # Appliquer les migrations Prisma (idempotent)
 make seed      # Réinitialiser et reseed la base (EFFACE les données)
+make db-reset  # Réinitialiser complètement la base (migrations + seed)
 make test      # Lancer les tests Jest (API) dans le conteneur
 make test:web  # Lancer les tests PHPUnit (web) en local
 make health    # Vérifier que l'API et la base répondent
@@ -124,7 +125,7 @@ make clean     # Supprimer conteneurs + volumes (DONNÉES PERDUES)
 sae-web-api/
 ├── api/
 │   ├── prisma/
-│   │   ├── schema.prisma           # Modèle de données (6 tables)
+│   │   ├── schema.prisma           # Modèle de données (7 tables)
 │   │   ├── seed.ts                 # Seed DataTourisme + météo Open-Meteo
 │   │   └── migrations/             # Migrations versionnées
 │   ├── src/
@@ -134,19 +135,27 @@ sae-web-api/
 │   │   ├── review/                 # CRUD avis (rating 1-5)
 │   │   ├── log/                    # Journal d'activité (auto via triggers)
 │   │   ├── recommendation/         # Moteur de score Top 3 villes
+│   │   ├── ranking/                # Classement villes / événements / régions
 │   │   ├── user/                   # CRUD utilisateurs
-│   │   ├── common/jwt.middleware.ts
+│   │   ├── common/
+│   │   │   ├── jwt.middleware.ts   # Vérification des tokens JWT
+│   │   │   └── log.middleware.ts   # Journalisation automatique de chaque appel API
+│   │   ├── env.ts                  # Chargement et validation des variables d'environnement
 │   │   ├── client.ts               # PrismaClient singleton
 │   │   └── index.ts                # Point d'entrée Express
-│   ├── tests/                      # Tests Jest (8 suites, 136 tests)
+│   ├── tests/                      # Tests Jest (9 suites, 103 tests)
+│   ├── swagger.yaml                # Spécification OpenAPI 3.0
 │   ├── Dockerfile                  # Image de développement
 │   └── Dockerfile.jrcandev         # Image de production (multi-stage)
 ├── web/
 │   ├── src/
-│   │   ├── pages/                  # Pages PHP (home, explore, login, dashboard…)
+│   │   ├── pages/                  # Pages PHP (home, explore, login, dashboard, ranking…)
+│   │   ├── includes/               # Fragments réutilisables (header, footer, navbar, sidebar)
 │   │   ├── class/                  # ApiClient PHP
 │   │   ├── config/                 # Configuration
+│   │   ├── lib/                    # Fonctions utilitaires PHP (functions.php)
 │   │   ├── css/                    # Styles
+│   │   ├── img/                    # Images statiques
 │   │   ├── js/                     # JavaScript (calendrier, interactions)
 │   │   ├── index.php
 │   │   └── main.inc.php
@@ -163,20 +172,27 @@ sae-web-api/
 
 ## API REST — Routes principales
 
-| Méthode | Endpoint               | Auth | Description                   |
-| ------- | ---------------------- | ---- | ----------------------------- |
-| POST    | `/auth/register`       | —    | Créer un compte               |
-| POST    | `/auth/login`          | —    | Connexion, retourne un JWT    |
-| GET     | `/city/`               | —    | Lister toutes les villes      |
-| GET     | `/city/:cityId/events` | —    | Événements d'une ville        |
-| GET     | `/event/`              | —    | Lister tous les événements    |
-| POST    | `/event/`              | JWT  | Créer un événement            |
-| GET     | `/review/`             | —    | Lister tous les avis          |
-| POST    | `/review/`             | JWT  | Créer un avis (rating 1-5)    |
-| GET     | `/logs/`               | JWT  | Journal d'activité            |
-| GET     | `/user/`               | JWT  | Lister les utilisateurs       |
-| GET     | `/recommendations`     | —    | **Top 3 villes recommandées** |
-| GET     | `/api/health`          | —    | Statut API + BDD              |
+| Méthode | Endpoint                   | Auth | Description                          |
+| ------- | -------------------------- | ---- | ------------------------------------ |
+| POST    | `/auth/register`           | —    | Créer un compte                      |
+| POST    | `/auth/login`              | —    | Connexion, retourne un JWT           |
+| GET     | `/city/`                   | —    | Lister toutes les villes             |
+| GET     | `/event/`                  | —    | Lister tous les événements           |
+| GET     | `/event/type`              | —    | Lister les types d'événements        |
+| POST    | `/event/`                  | JWT  | Créer un événement                   |
+| PUT     | `/event/:id`               | JWT  | Modifier un événement                |
+| DELETE  | `/event/:id`               | JWT  | Supprimer un événement               |
+| POST    | `/event/:id/review`        | JWT  | Créer un avis sur un événement       |
+| GET     | `/review/`                 | JWT  | Lister tous les avis                 |
+| GET     | `/logs/`                   | JWT  | Journal d'activité                   |
+| GET     | `/user/`                   | JWT  | Lister les utilisateurs              |
+| GET     | `/user/:id/events`         | JWT  | Événements créés par un utilisateur  |
+| DELETE  | `/user/:id`                | JWT  | Supprimer un utilisateur             |
+| GET     | `/recommendations`         | —    | **Top 3 villes recommandées**        |
+| GET     | `/ranking/cities`          | —    | Classement des villes (paginé)       |
+| GET     | `/ranking/events`          | —    | Classement des événements (paginé)   |
+| GET     | `/ranking/regions`         | —    | Classement des régions (paginé)      |
+| GET     | `/api/health`              | —    | Statut API + BDD                     |
 
 Documentation complète : **http://localhost:3070/api-docs** (Swagger UI)
 
@@ -200,6 +216,16 @@ Les données météo sont pré-calculées en base (table `CityWeather`, 269 vill
 
 ---
 
+## Classement (Ranking)
+
+Trois endpoints de classement sont disponibles, tous paginés (`?page=1&limit=20`, max 100 par page) :
+
+- **`GET /ranking/cities`** — villes triées par score composite (nombre d'événements × note moyenne des avis), recalculé automatiquement par un trigger PostgreSQL à chaque ajout/modification d'événement ou d'avis.
+- **`GET /ranking/events`** — événements triés par note moyenne de leurs avis (0 si aucun avis).
+- **`GET /ranking/regions`** — régions agrégées depuis le classement des villes, enrichies d'une photo récupérée depuis l'API Wikipédia (avec cache mémoire).
+
+---
+
 ## Tests
 
 ### API (Jest — dans le conteneur Docker)
@@ -210,7 +236,19 @@ make test
 docker compose exec api npx jest tests/ --coverage
 ```
 
-Couverture actuelle : **97,06% statements** — 8 suites, 136 tests.
+Couverture actuelle : **97,06% statements** — 9 suites, 103 tests.
+
+| Suite                  | Tests |
+| ---------------------- | ----- |
+| auth.test.ts           | 11    |
+| city.test.ts           | 4     |
+| event.test.ts          | 21    |
+| log.test.ts            | 11    |
+| none.test.ts           | 1     |
+| ranking.test.ts        | 9     |
+| recommendation.test.ts | 23    |
+| review.test.ts         | 12    |
+| user.test.ts           | 11    |
 
 ### Web PHP (PHPUnit — en local)
 
@@ -233,7 +271,7 @@ cd web && vendor/bin/phpunit tests/ --colors=always
 ## Dépannage
 
 **La commande `make up` échoue sur `make env`**  
-→ Le fichier `api/.env` est absent. Créez-le avec les variables listées ci-dessus.
+→ Le fichier `.env` est absent à la racine du projet. Créez-le avec les variables listées ci-dessus.
 
 **Le seed prend très longtemps**  
 → Normal. Le seed météo fait ~3 228 appels HTTP vers Open-Meteo par batches de 10, avec 500ms de délai entre chaque batch. Comptez 10-15 minutes.
