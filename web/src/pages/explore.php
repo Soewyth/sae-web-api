@@ -184,11 +184,6 @@ try {
                                     ) ?>
                                 </p>
 
-                                <div class="recommendations-meta">
-                                    <span><?= htmlspecialchars(
-                                      $recommendation['poisCount'],
-                                    ) ?> Evènements</span>
-                                </div>
 
                                 <div class="score-label">
                                     <span>Score</span>
@@ -276,7 +271,21 @@ try {
                         </article>
     
                         <article class="info-card">
-                            <p>En construction</p>
+                            <h3>
+                                <i class="bi bi-calendar-event"></i>
+                                Événements prévus
+                            </h3>
+
+                            <div class="weather-stats">
+                                <div>
+                                    <strong id="selectedDayEventCount">-</strong>
+                                    <span>événement(s)</span>
+                                </div>
+                            </div>
+
+                            <p class="mb-0 mt-2 text-muted" id="selectedDayEventMessage">
+                                Sélectionnez une date dans le calendrier.
+                            </p>
                         </article>
                     </section>
                 <?php

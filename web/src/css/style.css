@@ -168,26 +168,27 @@ a {
   flex-shrink: 0; 
 }
 
-.recommendation-content {
+.recommendations-content {
   flex: 1;
   min-width: 0;
 }
 
-.recommendation-header {
+.recommendations-header {
   display: flex;
   align-items: start;
   justify-content: space-between;
   gap: 15px;
 }
 
-.recommendation-header h2 {
-  font-size: px;
+.recommendations-header h2 {
+  font-size: 20px;
   font-weight: 800;
   color: var(--color-primary);
   margin: 0;
+  margin-bottom: 30px;
 }
 
-.recommendation-month {
+.recommendations-month {
   background-color: rgba(0, 180, 166, 0.12);
   color: var(--color-secondary);
   border-radius: 999px;
@@ -196,13 +197,14 @@ a {
   font-weight: 700;
 }
 
-.recommendation-region {
+.recommendations-region {
   margin: 5px 0;
   color: var(--color-tertiary);
   font-size: 16px;
+  margin-bottom: 15px;
 }
 
-.recommendation-meta {
+.recommendations-meta {
   display: flex;
   align-items: center;
   gap: 10px;
