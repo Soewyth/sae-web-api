@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
   }
 
-  $error = $data['message'] ?? $data['error'] ?? 'Identifiants incorrects.';
+  $error = $data['message'] ?? ($data['error'] ?? 'Identifiants incorrects.');
 }
 
 require_once __DIR__ . '/../includes/header.php';
