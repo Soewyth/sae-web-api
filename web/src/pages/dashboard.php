@@ -11,18 +11,24 @@ require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/navbar.php';
 ?>
 
-<main class="flex">
+
+<main>
 
     <nav class="sidebar">
-        <button class="toggle-btn" onclick="toggleSidebar()">
-            <i class="fas fa-chevron-left"></i>
-        </button>
+
 
 
         <div class="nav flex-column">
-            <a href="#" class="sidebar-link active text-decoration-none p-3">
+            <a href="<?= url(
+              'pages/events.php',
+            ) ?>" class="sidebar-link active text-decoration-none p-3">
                 <i class="fas fa-home me-3"></i>
-                <span class="hide-on-collapse">Dashboard</span>
+                <span class="hide-on-collapse">Evenements</span>
+            </a>
+
+            <a href="reviews.php" class="sidebar-link active text-decoration-none p-3">
+                <i class="fas fa-home me-3"></i>
+                <span class="hide-on-collapse">Avis</span>
             </a>
 
         </div>
@@ -40,124 +46,3 @@ require_once __DIR__ . '/../includes/navbar.php';
             </div>
         </div>
     </nav>
-
-</main>
-
-
-<style>
-:root {
-    --sidebar-width: 280px;
-    --sidebar-width-collapsed: 80px;
-}
-
-body {
-    overflow-x: hidden;
-}
-
-.sidebar {
-    width: var(--sidebar-width);
-    height: 100vh;
-    background: linear-gradient(135deg, #1a1c2e 0%, #16181f 100%);
-    transition: all 0.3s ease;
-}
-
-.sidebar.collapsed {
-    width: var(--sidebar-width-collapsed);
-}
-
-.sidebar-link {
-    color: #a0a3bd;
-    transition: all 0.2s ease;
-    border-radius: 8px;
-    margin: 4px 16px;
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-.sidebar-link:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(5px);
-}
-
-.sidebar-link.active {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.logo-text {
-    background: linear-gradient(45deg, #6b8cff, #8b9fff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    transition: opacity 0.3s ease;
-}
-
-.notification-badge {
-    background: #ff6b6b;
-    padding: 2px 6px;
-    border-radius: 6px;
-    font-size: 0.7rem;
-}
-
-.profile-section {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.main-content {
-    margin-left: var(--sidebar-width);
-    background-color: #f8f9fa;
-    min-height: 100vh;
-    padding: 20px;
-    transition: all 0.3s ease;
-}
-
-.collapsed~.main-content {
-    margin-left: var(--sidebar-width-collapsed);
-}
-
-.toggle-btn {
-    position: absolute;
-    right: -15px;
-    top: 20px;
-    background: white;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    border: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    z-index: 100;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.collapsed .toggle-btn {
-    transform: rotate(180deg);
-}
-
-.collapsed .hide-on-collapse {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.collapsed .logo-text {
-    opacity: 0;
-}
-
-.collapsed .profile-info {
-    opacity: 0;
-}
-
-.collapsed .sidebar-link {
-    text-align: center;
-    padding: 1rem !important;
-    margin: 4px 8px;
-}
-
-.collapsed .sidebar-link i {
-    margin: 0 !important;
-}
-
-.profile-info {
-    transition: opacity 0.2s ease;
-}
-</style>
