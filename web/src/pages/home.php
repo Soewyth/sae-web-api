@@ -1,6 +1,43 @@
 <?php
-$event_types = ['Festival', 'Cirque', 'Concert'];
-$regions = ['Nord-Pas-De-Calais', 'Nord'];
+
+$api = new ApiClient(API_BASE_URL);
+
+try {
+  $apiResponse = $api->get('/city', []);
+
+  if (!isset($apiResponse['result']) || !is_array($apiResponse['result'])) {
+    $errorMessage =
+      $apiResponse['message'] ??
+      ($apiResponse['error'] ??
+        'Impossible de récupérer les régions pour le moment.');
+  }
+
+  $data = $apiResponse['result'];
+  $regions = [];
+
+  foreach ($data as $city) {
+    if (!in_array($city['region'], $regions)) {
+      array_push($regions, $city['region']);
+    }
+  }
+} catch (Exception $e) {
+  $region = [];
+}
+
+try {
+  $apiResponse = $api->get('/event/type', []);
+
+  if (!isset($apiResponse['result']) || !is_array($apiResponse['result'])) {
+    $errorMessage =
+      $apiResponse['message'] ??
+      ($apiResponse['error'] ??
+        'Impossible de récupérer les types d\'événements pour le moment.');
+  }
+
+  $event_types = $apiResponse['result'];
+} catch (Exception $e) {
+  $event_types = [];
+}
 
 $months = [
   'Janvier',
@@ -26,7 +63,8 @@ $months = [
 
         <div class="home-main-buttons">
             <a href="#event-research" class="btn-cta text-light" style="background-color: var(--color-green);">
-                Commencer l'analyse &nbsp;<i class="bi bi-chevron-double-down"></i>
+                Commencer l'analyse &nbsp;
+                <i class="bi bi-chevron-double-down"></i>
             </a>
             <span class="real-time-badge">
                 <i class="bi bi-check-circle"></i> Données Temps Réel
