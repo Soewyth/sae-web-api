@@ -181,46 +181,36 @@ async function main() {
   // ***                ***
   //       USER REVIEWS
   // ***                ***
-  // recuperate from bdd first event on our base
-  const eventsByType = await Promise.all([
-    prisma.event.findFirst({ where: { type: 'FESTIVAL' } }),
-    prisma.event.findFirst({ where: { type: 'CONCERT' } }),
-    prisma.event.findFirst({ where: { type: 'MARCHE' } }),
-    prisma.event.findFirst({ where: { type: 'CONFERENCE' } }),
-    prisma.event.findFirst({ where: { type: 'RUNNING' } }),
-    prisma.event.findFirst({ where: { type: 'SPORT' } }),
-    prisma.event.findFirst({ where: { type: 'SPECTACLE' } }),
-    prisma.event.findFirst({ where: { type: 'EXPOSITION' } }),
-    prisma.event.findFirst({ where: { type: 'ANIMATION' } }),
-    prisma.event.findFirst({ where: { type: 'CINEMA' } }),
-    prisma.event.findFirst({ where: { type: 'THEATRE' } }),
-  ])
-
-  // filter null events skip them (types not found in seed data)
-  const validEvents = eventsByType.filter((e) => e !== null) as NonNullable<typeof eventsByType[0]>[]
+  // ~70% of events get 1 to 4 reviews with random ratings (1-5) so that
+  // the rankings (cities, events, regions) have varied scores
+  const allEvents = await prisma.event.findMany()
+  const reviewers = [admin, user]
+  const commentsByRating = [
+    "Très déçu, à éviter.",
+    "Pas terrible, l'organisation est à revoir.",
+    "Bien mais peut mieux faire.",
+    "Très bon moment, je recommande.",
+    "Excellent événement, très bien organisé !",
+  ]
 
   const reviews = []
-  // for each event, create 2 reviews, one by admin and one by user
-  for (const event of validEvents) {
-    const r1 = await prisma.userReview.create({
-      data: {
-        rating: 5,
-        comment: "Excellent événement, très bien organisé !",
-        FK_EventId: event.id,
-        FK_userId: admin.id,
-        createdBy: admin.id
-      }
-    })
-    const r2 = await prisma.userReview.create({
-      data: {
-        rating: 3,
-        comment: "Bien mais peut mieux faire.",
-        FK_EventId: event.id,
-        FK_userId: user.id,
-        createdBy: user.id
-      }
-    })
-    reviews.push(r1, r2)
+  for (const event of allEvents) {
+    if (Math.random() < 0.3) continue // ~30% of events stay without review
+    const nbReviews = 1 + Math.floor(Math.random() * 4) // 1 to 4 reviews
+    for (let i = 0; i < nbReviews; i++) {
+      const reviewer = reviewers[Math.floor(Math.random() * reviewers.length)]!
+      const rating = 1 + Math.floor(Math.random() * 5) // random rating between 1 and 5
+      const review = await prisma.userReview.create({
+        data: {
+          rating: rating,
+          comment: commentsByRating[rating - 1]!,
+          FK_EventId: event.id,
+          FK_userId: reviewer.id,
+          createdBy: reviewer.id
+        }
+      })
+      reviews.push(review)
+    }
   }
 
   // ***                ***
@@ -237,7 +227,7 @@ async function main() {
     })
   }
 
-  for (const event of validEvents) {
+  for (const event of allEvents) {
     await prisma.log.create({
       data: {
         method: EnumMethod.GET,

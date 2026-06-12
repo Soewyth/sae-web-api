@@ -27,6 +27,8 @@ tags:
     description: Consultation des logs
   - name: Recommendations
     description: Recommandations de villes
+  - name: Ranking
+    description: Classements (villes, événements, régions) basés sur les reviews
 
 components:
   securitySchemes:
@@ -901,5 +903,160 @@ paths:
                           items: { type: object }
         '400':
           $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /ranking/cities:
+    get:
+      tags: [Ranking]
+      summary: Classement des villes par score
+      description: >
+        Classement des villes les plus attractives, lu depuis la table
+        CityRanking maintenue par un trigger plpgsql. Le score d'une ville
+        (sur 5) vaut 70 % de la moyenne des notes de ses événements + 30 %
+        de bonus selon son nombre d'événements (plafonné à 10).
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Numéro de page (défaut 1)
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          required: false
+          description: Nombre d'éléments par page (défaut 20, max 100)
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Classement des villes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  page: { type: integer }
+                  limit: { type: integer }
+                  total: { type: integer }
+                  totalPages: { type: integer }
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rank: { type: integer }
+                        score: { type: number }
+                        eventCount: { type: integer }
+                        city:
+                          type: object
+                          properties:
+                            id: { type: string, format: uuid }
+                            name: { type: string }
+                            region: { type: string }
+                            imageUrl: { type: string, nullable: true }
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /ranking/events:
+    get:
+      tags: [Ranking]
+      summary: Classement des événements par score
+      description: >
+        Classement de tous les événements, triés par score décroissant
+        (score = moyenne des ratings des reviews de l'événement, de 1 à 5,
+        0 si l'événement n'a pas encore de review).
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Numéro de page (défaut 1)
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          required: false
+          description: Nombre d'éléments par page (défaut 20, max 100)
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Classement des événements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  page: { type: integer }
+                  limit: { type: integer }
+                  total: { type: integer }
+                  totalPages: { type: integer }
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rank: { type: integer }
+                        score: { type: number }
+                        reviewCount: { type: integer }
+                        event:
+                          type: object
+                          properties:
+                            id: { type: string, format: uuid }
+                            title: { type: string }
+                            type: { $ref: '#/components/schemas/EnumType' }
+                            startDate: { type: string, format: date-time }
+                            endDate: { type: string, format: date-time }
+                            imageUrl: { type: string, nullable: true }
+                            city:
+                              type: object
+                              properties:
+                                id: { type: string, format: uuid }
+                                name: { type: string }
+                                region: { type: string }
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /ranking/regions:
+    get:
+      tags: [Ranking]
+      summary: Classement des régions par score
+      description: >
+        Classement des régions (score = moyenne des scores des villes notées
+        de la région). La photo de chaque région est récupérée depuis l'API
+        REST de Wikipédia en français (avec cache mémoire).
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: Numéro de page (défaut 1)
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          required: false
+          description: Nombre d'éléments par page (défaut 20, max 100)
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Classement des régions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  page: { type: integer }
+                  limit: { type: integer }
+                  total: { type: integer }
+                  totalPages: { type: integer }
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rank: { type: integer }
+                        region: { type: string }
+                        score: { type: number }
+                        eventCount: { type: integer }
+                        cityCount: { type: integer }
+                        imageUrl: { type: string, nullable: true }
         '500':
           $ref: '#/components/responses/ServerError'
