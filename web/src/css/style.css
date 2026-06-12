@@ -469,5 +469,229 @@ a {
     cursor: not-allowed;
 }
 
+/* =============== */
+/* Page classement */
+/* =============== */
+
+.ranking-page {
+  padding: 30px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.ranking-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: 5px;
+}
+
+.ranking-subtitle {
+  color: var(--color-tertiary);
+  font-size: 15px;
+  margin-bottom: 25px;
+}
+
+.ranking-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border: none;
+}
+
+.ranking-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-tertiary);
+  cursor: pointer;
+}
+
+.ranking-tab i {
+  color: var(--color-secondary);
+}
+
+.ranking-tab:hover {
+  color: var(--color-primary);
+}
+
+.ranking-tab.active {
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: var(--color-white);
+}
+
+.ranking-tab.active i {
+  color: var(--color-white);
+}
+
+.ranking-card {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  padding: 10px 20px;
+  overflow-x: auto;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ranking-table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-tertiary);
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ranking-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+  color: var(--color-dark);
+  font-size: 14px;
+}
+
+.ranking-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ranking-table tbody tr:hover {
+  background-color: rgba(0, 180, 166, 0.05);
+}
+
+.ranking-col-rank {
+  width: 60px;
+  text-align: center;
+}
+
+.ranking-col-score {
+  width: 200px;
+}
+
+.ranking-col-count {
+  width: 110px;
+  text-align: center;
+}
+
+.ranking-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-bg);
+  color: var(--color-primary);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.ranking-rank.top {
+  background-color: var(--color-secondary);
+  color: var(--color-white);
+}
+
+.ranking-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ranking-identity strong {
+  display: block;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.ranking-identity small {
+  display: block;
+  color: var(--color-tertiary);
+}
+
+.ranking-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.ranking-thumb-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-tertiary);
+  font-size: 22px;
+}
+
+.ranking-score .score-label {
+  font-size: 13px;
+}
+
+.ranking-count {
+  display: inline-block;
+  background-color: rgba(0, 180, 166, 0.12);
+  color: var(--color-secondary);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.ranking-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.ranking-page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ranking-page-link:hover {
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+}
+
+.ranking-page-link.active {
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: var(--color-white);
+}
+
+.ranking-page-ellipsis {
+  color: var(--color-tertiary);
+  font-weight: 700;
+  padding: 0 4px;
+}
+
 
 

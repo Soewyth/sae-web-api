@@ -11,6 +11,7 @@ import { eventRouter } from './event/event.router.js';
 import { reviewRouter } from './review/review.router.js';
 import { logRouter } from './log/log.router.js';
 import { recommendationRouter } from './recommendation/recommendation.router.js';
+import { rankingRouter } from './ranking/ranking.router.js';
 
 export const app = express();
 
@@ -60,6 +61,7 @@ app.use('/event', eventRouter);
 app.use('/review', reviewRouter);
 app.use('/logs', logRouter);
 app.use('/recommendations', recommendationRouter);
+app.use('/ranking', rankingRouter);
 
 export function stopServer() {
   if (server) server.close();

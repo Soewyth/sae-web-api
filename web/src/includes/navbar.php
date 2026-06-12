@@ -40,6 +40,15 @@ $activePage = $activePage ?? '';
                         </a>
                     </li>
 
+                    <li class="nav-item">
+                        <a
+                            class="nav-link <?= $activePage === 'ranking' ? 'active' : '' ?>"
+                            href="<?= url('pages/ranking.php') ?>"
+                        >
+                            Classement
+                        </a>
+                    </li>
+
                     <?php if (isUserLoggedIn() && hasExploreSearchParams()): ?>
                         <li class="nav-item">
                             <a class="nav-link <?= $activePage === 'explore' ? 'active' : '' ?>"
