@@ -18,7 +18,11 @@ export const getEventTypes = (_req: Request, res: Response) => {
  */
 export const getEvents = async (_req: Request, res: Response) => {
   try {
-    const events = await prisma.event.findMany();
+    const events = await prisma.event.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
     res.status(200).json({
       message: 'Liste des événements récupérée avec succès.',
       result: events,

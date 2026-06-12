@@ -86,6 +86,7 @@ export async function getEventsByUser(req: Request, res: Response) {
 
     const events = await prisma.event.findMany({
       where: { createdBy: userId },
+      orderBy: { createdAt: 'desc' },
     });
 
     res.status(200).json({

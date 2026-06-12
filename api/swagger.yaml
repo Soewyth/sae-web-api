@@ -764,6 +764,48 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /review:
+    get:
+      tags: [Reviews]
+      summary: Lister tous les avis
+      description: >
+        Renvoie tous les avis avec le nom d'utilisateur de l'auteur ainsi que
+        le titre et la ville de l'événement concerné.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des avis
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/Review'
+                        - type: object
+                          properties:
+                            user:
+                              type: object
+                              properties:
+                                username: { type: string }
+                            event:
+                              type: object
+                              properties:
+                                title: { type: string }
+                                city:
+                                  type: object
+                                  properties:
+                                    name: { type: string }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /review/{id}:
     put:
       tags: [Reviews]
