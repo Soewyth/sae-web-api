@@ -64,6 +64,43 @@ export async function getUserById(req: Request, res: Response) {
   }
 }
 
+// Get all events created by a user
+export async function getEventsByUser(req: Request, res: Response) {
+  const userId = req.params.id;
+  if (typeof userId !== 'string') {
+    res.status(400).json({ error: "Identifiant d'utilisateur invalide." });
+    return;
+  }
+  try {
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      res
+        .status(404)
+        .json({ error: `Utilisateur avec l'ID ${userId} non trouvé.` });
+      return;
+    }
+
+    const events = await prisma.event.findMany({
+      where: { createdBy: userId },
+    });
+
+    res.status(200).json({
+      message: `Événements de l'utilisateur '${user.username}' récupérés avec succès.`,
+      result: events,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message:
+        "Une erreur est survenue lors de la récupération des événements de l'utilisateur.",
+      error: error,
+    });
+  }
+}
+
 // Update user by ID
 export async function updateUser(req: Request, res: Response) {
   const userId = req.params.userId;

@@ -474,6 +474,36 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
+  /user/{id}/events:
+    get:
+      tags: [Users]
+      summary: Lister les événements créés par un utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Événements de l'utilisateur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  result:
+                    type: array
+                    items: { $ref: '#/components/schemas/Event' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
   /city:
     get:
       tags: [Cities]
