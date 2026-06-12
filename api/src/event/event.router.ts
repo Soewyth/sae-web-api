@@ -7,6 +7,7 @@ import {
   putEvent,
   deleteEvent,
 } from './event.controller.js';
+import { postReview } from '../review/review.controller.js';
 
 export const eventRouter = Router();
 
@@ -16,3 +17,4 @@ eventRouter.get('/type', getEventTypes);
 eventRouter.post('/', verifyJWT, postEvent);
 eventRouter.put('/:id', verifyJWT, putEvent);
 eventRouter.delete('/:id', verifyJWT, deleteEvent);
+eventRouter.post('/:id/review', verifyJWT, postReview);

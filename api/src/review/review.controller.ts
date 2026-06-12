@@ -40,3 +40,67 @@ export const getReviews = async (_req: Request, res: Response) => {
     });
   }
 };
+
+//##### POST #####
+/**
+ * Permet de créer une review pour un événement
+ */
+export const postReview = async (req: Request, res: Response) => {
+  // On récupère l'id de l'événement depuis l'url
+  const eventId = req.params.id;
+  if (typeof eventId !== 'string') {
+    res.status(400).json({ error: "Identifiant d'événement invalide." });
+    return;
+  }
+  // On récupère les données du body (json)
+  const { rating, comment } = req.body;
+
+  try {
+    if (rating === undefined) {
+      res.status(400).json({
+        message:
+          "Le champ 'rating' est obligatoire pour la création d'une review",
+      });
+      return;
+    }
+    //on vérifie si l'événement existe
+    const event = await prisma.event.findUnique({
+      where: {
+        id: eventId,
+      },
+    });
+    if (!event) {
+      res.status(400).json({
+        message: `L'événement avec l'id '${eventId}' n'existe pas`,
+      });
+      return;
+    }
+
+    //On récupère l'utilisateur
+    const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({ message: 'Utilisateur non authentifié.' });
+      return;
+    }
+
+    const reviewToCreate = await prisma.userReview.create({
+      data: {
+        rating: rating,
+        comment: comment,
+        FK_EventId: eventId,
+        FK_userId: userId,
+        createdBy: userId,
+      },
+    });
+
+    res.status(201).json({
+      message: 'Review créée avec succès.',
+      result: reviewToCreate,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Une erreur est survenue lors de la création de la review.',
+      error: error,
+    });
+  }
+};
