@@ -1,10 +1,16 @@
 <?php
 require_once __DIR__ . '/../main.inc.php';
 
-requireLogin();
-
 if (!hasExploreSearchParams()) {
     header('Location: ' . url('index.php'));
+    exit;
+}
+
+if (!isset($_SESSION['user'])) {
+    $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+    $_SESSION['flash_error'] = 'Vous devez être connecté pour accéder aux recommandations.';
+
+    header('Location: ' . url('pages/login.php'));
     exit;
 }
 
@@ -310,7 +316,7 @@ try {
                 </section>
 
                 <form method="POST" action="<?= url(
-                  'pages/book-event.php',
+                  'pages/book_event.php',
                 ) ?>" class="booking-form">
 
                     <input type="hidden" name="eventName" value="<?= htmlspecialchars($eventName) ?>">

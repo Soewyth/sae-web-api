@@ -28,3 +28,5 @@ $bodyClass = $bodyClass ?? '';
     <!-- CSS personnalisé -->
     <link rel="stylesheet" href="<?= url('css/style.css') ?>">
 </head>
+
+<body class="<?= htmlspecialchars($bodyClass) ?>">
