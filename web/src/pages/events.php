@@ -172,6 +172,17 @@ $colCount = isAdmin() ? 7 : 6;
                                                                 ) ?>'); return false;">
                                             <i class="bi bi-pencil"></i> Modifier
                                         </a>
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-warning btn-review"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#reviewModal"
+                                            data-event-id="<?= htmlspecialchars($event['id']) ?>"
+                                            data-event-title="<?= htmlspecialchars($event['title']) ?>"
+                                        >
+                                            <i class="bi bi-star"></i> Avis
+                                        </button>
                                         <?php if (isAdmin()): ?>
                                             <a href="#" class="btn btn-sm btn-outline-danger"
                                                 onclick="deleteEvent('<?= htmlspecialchars(
@@ -234,6 +245,64 @@ $colCount = isAdmin() ? 7 : 6;
         </div>
     </div>
 </main>
+
+
+<!-- Modale d'ajout d'avis -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="<?= url('pages/review_create.php') ?>">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reviewModalLabel">
+                        <i class="bi bi-star"></i> Ajouter un avis
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="event_id" id="reviewEventId">
+
+                    <p class="mb-3">
+                        Avis pour :
+                        <strong id="reviewEventTitle">—</strong>
+                    </p>
+
+                    <div class="mb-3">
+                        <label for="reviewRating" class="form-label">Note</label>
+                        <select name="rating" id="reviewRating" class="form-select" required>
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Très bien</option>
+                            <option value="3">3 - Moyen</option>
+                            <option value="2">2 - Décevant</option>
+                            <option value="1">1 - Mauvais</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reviewComment" class="form-label">Commentaire</label>
+                        <textarea
+                            name="comment"
+                            id="reviewComment"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Votre commentaire..."
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Annuler
+                    </button>
+
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check-lg"></i> Publier l'avis
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Modale de modification d'un événement -->
 <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
@@ -355,6 +424,14 @@ $colCount = isAdmin() ? 7 : 6;
                         onclick="editEvent('${event.id}'); return false;">
                         <i class="bi bi-pencil"></i> Modifier
                     </a>
+                    <button type="button"
+                        class="btn btn-sm btn-outline-warning btn-review"
+                        data-bs-toggle="modal"
+                        data-bs-target="#reviewModal"
+                        data-event-id="${escapeHtml(event.id)}"
+                        data-event-title="${escapeHtml(event.title)}">
+                        <i class="bi bi-star"></i> Avis
+                    </button>
                     ${deleteBtn}
                 </td>
             </tr>
@@ -482,4 +559,21 @@ $colCount = isAdmin() ? 7 : 6;
         document.body.appendChild(form);
         form.submit();
     }
+
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('.btn-review');
+
+        if (!button) {
+            return;
+        }
+
+        const eventId = button.dataset.eventId;
+        const eventTitle = button.dataset.eventTitle;
+
+        document.getElementById('reviewEventId').value = eventId;
+        document.getElementById('reviewEventTitle').textContent = eventTitle;
+
+        document.getElementById('reviewRating').value = '5';
+        document.getElementById('reviewComment').value = '';
+    });
 </script>
