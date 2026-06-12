@@ -47,9 +47,44 @@ else
   }
 fi
 
+COMPOSE="docker compose -f docker-compose.jrcandev.yml"
+
 echo "=== Rebuilding stack ==="
-docker compose down
-docker compose -f docker-compose.jrcandev.yml build --no-cache
-docker compose -f docker-compose.jrcandev.yml up -d
+# Le réseau externe "web" (traefik) doit exister avant le up
+docker network inspect web >/dev/null 2>&1 || docker network create web
+$COMPOSE down
+$COMPOSE build --no-cache
+$COMPOSE up -d
+
+echo "=== Waiting for PostgreSQL ==="
+i=0
+until $COMPOSE exec -T db sh -c 'pg_isready -U $POSTGRES_USER -d $POSTGRES_DB' >/dev/null 2>&1; do
+  i=$((i+1))
+  if [ "$i" -gt 60 ]; then
+    echo "PostgreSQL is not responding after 60s. Deployment aborted."
+    exit 1
+  fi
+  sleep 1
+done
+
+echo "=== Applying Prisma migrations ==="
+$COMPOSE exec -T api npx prisma migrate deploy
+
+# Seed only if the database is empty: the seed script wipes existing data
+# (deleteMany), so re-running it on every deploy would erase user accounts.
+count=$($COMPOSE exec -T db sh -c 'psql -U $POSTGRES_USER -d $POSTGRES_DB -tAc "SELECT COUNT(*) FROM \"City\""' 2>/dev/null || echo 0)
+if [ "$count" = "0" ]; then
+  echo "=== Empty database: seeding ==="
+  $COMPOSE exec -T api npx prisma db seed
+else
+  echo "=== Database already populated ($count cities): seed skipped ==="
+fi
+
+echo "=== Healthcheck ==="
+$COMPOSE exec -T api wget -qO- http://localhost:3070/api/health || {
+  echo "API healthcheck failed. Check logs with: $COMPOSE logs api"
+  exit 1
+}
+echo ""
 
 echo "Deployment completed at $(date)"

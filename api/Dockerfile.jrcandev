@@ -8,9 +8,14 @@ COPY package*.json ./
 RUN npm install
 
 # 2. Schéma Prisma (obligatoire avant generate)
+# prisma.config.ts porte le chemin du schéma et l'URL de la datasource (Prisma 7)
 COPY prisma ./prisma
+COPY prisma.config.ts ./
 
 # 3. Génération du client Prisma
+# generate ne se connecte pas à la base : URL factice uniquement pour
+# satisfaire la résolution env("DATABASE_URL") de prisma.config.ts
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 RUN npx prisma generate
 
 # 4. Code applicatif
@@ -30,12 +35,18 @@ COPY package*.json ./
 RUN npm install --omit=dev --ignore-scripts
 
 # 2. Récupération des éléments prisma
+# prisma.config.ts + dossier prisma/ : nécessaires pour "prisma migrate deploy"
+# et "prisma db seed" lancés par deploy.sh dans ce conteneur
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./
 
 # 3. Récupération du Code applicatif compilé
 COPY --from=builder /app/dist ./dist
+
+# 4. Documentation OpenAPI, chargée au démarrage par index.ts
+COPY swagger.yaml ./
 
 EXPOSE 3070
 
