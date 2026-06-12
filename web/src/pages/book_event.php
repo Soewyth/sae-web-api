@@ -28,18 +28,20 @@ if ($eventName === '' ||$eventType === '' ||$cityId === '' ||$startDate === '')
 try {
     $startDateTime = new DateTime($startDate);
 
+    // On ajoute 1 an car les données météo viennent de l'année précédente
+    $startDateTime->modify('+1 year');
+
     $endDateTime = clone $startDateTime;
     $endDateTime->modify('+' . ($duration - 1) . ' days');
 
     $payload = [
         'type' => $eventType,
-        'startDate' => $startDateTime->format('Y-m-d'),
-        'endDate' => $endDateTime->format('Y-m-d'),
+        'startDate' => $startDateTime->format(DateTime::ATOM),
+        'endDate' => $endDateTime->format(DateTime::ATOM),
         'description' => $description,
         'isOutdoor' => $setting === 'outdoor',
         'nbGuests' => $nbGuests,
         'title' => $eventName,
-        'weather' => null,
         'FK_cityId' => $cityId,
     ];
 
