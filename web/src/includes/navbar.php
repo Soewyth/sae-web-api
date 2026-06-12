@@ -91,3 +91,21 @@ $activePage = $activePage ?? '';
         </div>
     </nav>
 </header>
+
+<?php if (!empty($_SESSION['flash_success'])): ?>
+    <div class="container mt-4">
+        <div class="alert alert-success">
+            <?= htmlspecialchars($_SESSION['flash_success']) ?>
+        </div>
+    </div>
+    <?php unset($_SESSION['flash_success']); ?>
+<?php endif; ?>
+
+<?php if (!empty($_SESSION['flash_error'])): ?>
+    <div class="container mt-4">
+        <div class="alert alert-danger">
+            <?= htmlspecialchars($_SESSION['flash_error']) ?>
+        </div>
+    </div>
+    <?php unset($_SESSION['flash_error']); ?>
+<?php endif; ?>

@@ -51,7 +51,7 @@ class ApiClient
                 'method' => $method,
                 'header' => implode("\r\n", $headers) . "\r\n",
                 'ignore_errors' => true,
-                'timeout' => 10,
+                'timeout' => 30,
             ]
         ];
 
