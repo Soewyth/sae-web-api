@@ -48,9 +48,9 @@ async function main() {
   await prisma.log.deleteMany();
   await prisma.userReview.deleteMany();
   await prisma.event.deleteMany();
+  await prisma.cityWeather.deleteMany();
   await prisma.city.deleteMany();
   await prisma.user.deleteMany();
-
   // create admin user
   const admin = await prisma.user.create({
     data: {
@@ -162,9 +162,9 @@ async function main() {
       const startDate = new Date(`${takesPlaceAt.startDate}T${takesPlaceAt.startTime ?? '00:00'}:00`)
       const endDate = new Date(`${takesPlaceAt.endDate ?? takesPlaceAt.startDate}T${takesPlaceAt.endTime ?? '23:59'}:00`)
 
-      const title = (obj.label?.['@fr'] ?? 'Sans titre').substring(0,100)
+      const title = (obj.label?.['@fr'] ?? 'Sans titre').substring(0, 100)
       const imageUrl = obj.hasMainRepresentation?.[0]?.hasRelatedResource?.[0]?.locator?.[0] ?? null
-      
+
       await prisma.event.create({
         data: {
           title: title,
@@ -173,7 +173,7 @@ async function main() {
           endDate,
           FK_cityId: cityId,
           imageUrl,
-          maxCapacity : Math.floor(Math.random() * 5000) // random capacity between 100 and 5000
+          maxCapacity: Math.floor(Math.random() * 5000) // random capacity between 100 and 5000
         }
       })
     }
@@ -245,6 +245,77 @@ async function main() {
         fk_eventId: event.id
       }
     })
+  }
+  const METEO_URL = 'https://archive-api.open-meteo.com/v1/archive';
+  const year = new Date().getFullYear() - 1;
+  const allCities = await prisma.city.findMany();
+
+  // Process cities in batches of 10 to avoid rate limiting
+  const BATCH_SIZE = 10;
+  for (let i = 0; i < allCities.length; i += BATCH_SIZE) {
+    const batch = allCities.slice(i, i + BATCH_SIZE);
+
+    await Promise.all(batch.map(async (city) => {
+      for (let month = 1; month <= 12; month++) {
+        const monthStr = month < 10 ? '0' + month : '' + month;
+        const lastDay = new Date(year, month, 0).getDate();
+        const start = `${year}-${monthStr}-01`;
+        const end = `${year}-${monthStr}-${lastDay}`;
+
+        try {
+          const url = `${METEO_URL}?latitude=${city.latitude}&longitude=${city.longitude}&start_date=${start}&end_date=${end}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,sunshine_duration&timezone=auto`;
+          const response = await fetch(url);
+          if (!response.ok) return;
+
+          const data = await response.json() as {
+            daily: {
+              time: string[];
+              temperature_2m_max: Array<number | null>;
+              temperature_2m_min: Array<number | null>;
+              precipitation_sum: Array<number | null>;
+              sunshine_duration: Array<number | null>;
+            }
+          };
+
+          let totalTemp = 0, totalPrecip = 0, totalSun = 0, validDays = 0;
+
+          for (let d = 0; d < data.daily.time.length; d++) {
+            const maxT = data.daily.temperature_2m_max[d];
+            const minT = data.daily.temperature_2m_min[d];
+            if (maxT == null || minT == null) continue;
+            totalTemp += (maxT + minT) / 2;
+            totalPrecip += data.daily.precipitation_sum[d] ?? 0;
+            totalSun += data.daily.sunshine_duration[d] ?? 0;
+            validDays++;
+          }
+
+          if (validDays === 0) return;
+
+          await prisma.cityWeather.upsert({
+            where: { FK_cityId_month: { FK_cityId: city.id, month } },
+            update: {
+              avgTemp: Math.round((totalTemp / validDays) * 10) / 10,
+              avgPrecip: Math.round((totalPrecip / validDays) * 10) / 10,
+              avgSun: Math.round((totalSun / validDays / 3600) * 10) / 10,
+            },
+            create: {
+              FK_cityId: city.id,
+              month,
+              avgTemp: Math.round((totalTemp / validDays) * 10) / 10,
+              avgPrecip: Math.round((totalPrecip / validDays) * 10) / 10,
+              avgSun: Math.round((totalSun / validDays / 3600) * 10) / 10,
+            }
+          });
+        } catch {
+          // skip city/month on error
+        }
+      }
+    }));
+
+    // Small delay between batches to respect rate limits
+    if (i + BATCH_SIZE < allCities.length) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
   }
   console.log('Seed completed!');
 }
